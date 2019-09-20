@@ -1,3 +1,6 @@
+import './util/polyfills';
+
+import configuration from './configuration';
 import layout from './layout';
 import styles from './styles';
 import init from './init';
@@ -10,7 +13,10 @@ export default function studyOverview(element = 'body', settings = {}) {
         init,
         destroy,
     };
+
+    configuration.call(studyOverview);
     layout.call(studyOverview);
     styles.call(studyOverview);
+
     return studyOverview;
 }

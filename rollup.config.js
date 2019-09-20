@@ -25,6 +25,10 @@ export default {
 
         return Object.keys(dependencies);
     }()),
+    watch: {
+        chokidar: true,
+        include: 'src/**',
+    },
     plugins: [
         babel({
             exclude: 'node_modules/**',

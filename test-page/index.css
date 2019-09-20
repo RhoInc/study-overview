@@ -29,10 +29,46 @@
     flex-wrap: wrap;
     flex-direction: row;
 }
-.study-overview > div {
+.so-card {
     display: flex;
     flex-basis: calc(50% - 40px);
     justify-content: center;
     flex-direction: column;
-    margin: 20px;
+    margin: 18px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+}
+.so-card__header {
+    font-size: 24px;
+    margin: 4px 8px;
+    padding: 4px 8px;
+    font-weight: lighter;
+    border-bottom: 1px solid #aaa;
+    vertical-align: top;
+}
+.so-card__table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    margin: 4px 8px;
+    padding: 4px 8px;
+}
+.so-card__table__row {
+}
+.so-card__table__row:hover {
+    outline: 1px solid blue;
+}
+.so-card__table__row:nth-child(2n) {
+    background: #f2f2f2;
+}
+.so-card__table__row__cell {
+    border-width: 0 0 0 1px;
+    font-size: inherit;
+    margin: 0;
+    overflow: visible;
+    padding: .5em 1em;
+}
+.so-card__table__row__cell:first-child {
+    width: 25%;
+    text-align: right;
 }

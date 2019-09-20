@@ -5,13 +5,13 @@
   "module": "src/index.js",
   "main": "studyOverview.js",
   "scripts": {
-	"build": "npm audit fix && npm run bundle && npm run format",
-	"bundle": "rollup -c",
-	"format": "npm run format-src && npm run format-bundle",
-	"format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
-	"format-bundle": "prettier --print-width=100 --tab-width=4 --single-quote --write ./bundle.js",
-	"test-page": "start chrome ./test-page/index.html && start firefox ./test-page/index.html && start iexplore file://%CD%/test-page/index.html",
-	"watch": "rollup -c -w"
+    "build": "npm audit fix && npm run bundle && npm run format",
+    "bundle": "rollup -c",
+    "format": "npm run format-src && npm run format-bundle",
+    "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
+    "format-bundle": "prettier --print-width=100 --tab-width=4 --single-quote --write ./bundle.js",
+    "test-page": "start chrome ./test-page/index.html && start firefox ./test-page/index.html && start iexplore file://%CD%/test-page/index.html",
+    "watch": "rollup -c -w"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,7 @@
   "devDependencies": {
     "@babel/core": "^7.6.0",
     "@babel/preset-env": "^7.6.0",
+    "chokidar": "^3.1.1",
     "prettier": "^1.18.2",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3"

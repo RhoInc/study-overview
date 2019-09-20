@@ -14,6 +14,6 @@ export default function layout() {
             .enter()
         .append('div')
         .classed('so-card', true);
-    this.containers.cardHeaders = this.containers.cards.append('h4').classed('so-card__header', true).text(d => d.label);
-    this.containers.cardTables = this.containers.cards.append('table').classed('so-card__table', true);
+    this.containers.headers = this.containers.cards.append('h4').classed('so-card__header', true).text(d => d.label);
+    this.containers.tables = this.containers.cards.append('table').classed('so-card__table', true);
 }

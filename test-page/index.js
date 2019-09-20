@@ -21,6 +21,21 @@ Promise
                     spec: files[i].spec,
                 };
             });
-        const instance = studyOverview('#container');
+        const instance = studyOverview(
+            '#container',
+            {
+                //modules: [
+                //    {
+                //        spec: 'queries',
+                //    },
+                //    {
+                //        spec: 'accrual',
+                //    },
+                //    {
+                //        spec: 'forms',
+                //    },
+                //],
+            }
+        );
         instance.init(data);
     });
