@@ -1,10 +1,11 @@
-export default function queries(data) {
+export default function queries(module) {
+    const data = module.data.data;
     const summary = [];
 
     // overall
     const nQueries = {
         key: '# Queries Generated',
-        data: d3.set(data.data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
+        data: d3.set(data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
     };
     nQueries.values = nQueries.data.length;
     summary.push(nQueries);
@@ -20,7 +21,7 @@ export default function queries(data) {
 
     //        return nQueries;
     //    })
-    //    .entries(data.data);
+    //    .entries(data);
     //populations.forEach(population => {
     //    population.data = population.values.data;
     //    population.values = population.values.values;

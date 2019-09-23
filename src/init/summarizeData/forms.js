@@ -1,10 +1,11 @@
-export default function forms(data) {
+export default function forms(module) {
+    const data = module.data.data;
     const summary = [];
 
     // overall
     const nForms = {
         key: '# Pages Started',
-        data: d3.set(data.data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
+        data: d3.set(data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
     };
     nForms.values = nForms.data.length;
     summary.push(nForms);
@@ -20,7 +21,7 @@ export default function forms(data) {
 
     //        return nForms;
     //    })
-    //    .entries(data.data);
+    //    .entries(data);
     //populations.forEach(population => {
     //    population.data = population.values.data;
     //    population.values = population.values.values;

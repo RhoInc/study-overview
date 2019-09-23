@@ -175,13 +175,170 @@
         visit_col: ['visit_name', 'folderinstancename'],
         form_col: ['ecrfpagename'],
         modules: [{
-          spec: 'accrual'
+          spec: 'participants',
+          title: 'Participants',
+          unit: 'participant',
+          results: [{
+            label: '# Participants',
+            subset: [],
+            summary: 'count'
+          }, {
+            label: 'Screening',
+            subset: [{
+              key: 'SBJTSTAT',
+              values: ['Ongoing']
+            }, {
+              key: 'RFENDY',
+              values: ['6', '15', '16', '20', '21', '22', '28', '29', '30', '32', '42', '43', '44', '47']
+            }],
+            summary: 'count',
+            denominator: '# Participants'
+          }, {
+            label: 'Screen Failed',
+            subset: [{
+              key: 'SBJTSTAT',
+              values: ['Screen Failure']
+            }],
+            summary: 'count',
+            denominator: '# Participants'
+          }, {
+            label: 'Enrolled',
+            subset: [{
+              key: 'SBJTSTAT',
+              values: ['Ongoing']
+            }],
+            summary: 'count',
+            denominator: '# Participants'
+          }, {
+            label: 'Completed',
+            subset: [{
+              key: 'SBJTSTAT',
+              values: ['Completed']
+            }],
+            summary: 'count',
+            denominator: '# Participants'
+          }, {
+            label: 'Early Termination',
+            subset: [{
+              key: 'SBJTSTAT',
+              values: ['Early Termination']
+            }],
+            summary: 'count',
+            denominator: '# Participants'
+          }]
         }, {
-          spec: 'visits'
+          spec: 'visits',
+          title: 'Visits',
+          unit: 'visit',
+          results: [{
+            label: '# Visits',
+            subset: [],
+            summary: 'count'
+          }, {
+            label: 'Visit Status',
+            subset: [{
+              key: 'visit_status',
+              values: ['Completed', 'Expected', 'Overdue', 'Missed']
+            }],
+            summary: 'count',
+            denominator: '# Visits',
+            by: 'visit_status'
+          }]
         }, {
-          spec: 'forms'
+          spec: 'forms',
+          title: 'Forms',
+          unit: 'form',
+          results: [{
+            label: '# Forms',
+            subset: [{
+              key: 'is_partial_entry',
+              values: ['1']
+            }],
+            summary: 'count'
+          }, {
+            label: 'Verified',
+            subset: [{
+              key: 'is_verified',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }, {
+            label: 'Needs Verification',
+            subset: [{
+              key: 'needs_verification',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }, {
+            label: 'Signed',
+            subset: [{
+              key: 'is_signed',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }, {
+            label: 'Needs Signature',
+            subset: [{
+              key: 'needs_signature',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }, {
+            label: 'Frozen',
+            subset: [{
+              key: 'is_frozen',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }, {
+            label: 'Ready for Freeze',
+            subset: [{
+              key: 'ready_for_freeze',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }, {
+            label: 'Locked',
+            subset: [{
+              key: 'is_locked',
+              values: ['1']
+            }],
+            summary: 'count',
+            denominator: '# Forms'
+          }]
         }, {
-          spec: 'queries'
+          spec: 'queries',
+          title: 'Queries',
+          unit: 'query',
+          results: [{
+            label: '# Queries',
+            subset: [],
+            summary: 'count'
+          }, {
+            label: 'Open Queries by Age Category',
+            subset: [{
+              key: 'querystatus',
+              values: ['Open']
+            }],
+            summary: 'count',
+            denominator: '# Queries',
+            by: 'folderinstancename'
+          }, {
+            label: 'Answered Queries by Marking Group',
+            subset: [{
+              key: 'querystatus',
+              values: ['Answered']
+            }],
+            summary: 'count',
+            denominator: '# Queries',
+            by: 'markinggroup'
+          }]
         }]
       };
     }
@@ -364,47 +521,49 @@
       sync.call(this, defaults());
     }
 
-    function tables() {
-      return [{
-        spec: 'accrual',
-        label: 'Accrual'
-      }, {
-        spec: 'visits',
-        label: 'Visits'
-      }, {
-        spec: 'forms',
-        label: 'Forms'
-      }, {
-        spec: 'queries',
-        label: 'Queries'
-      }];
-    }
-
     function layout() {
       this.containers = {
         main: d3.select(this.element).append('div').datum(this).classed('study-overview', true).attr('id', "study-overview".concat(document.querySelectorAll('.study-overview').length))
       };
-      this.containers.cards = this.containers.main.selectAll('div.so-card').data(tables).enter().append('div').classed('so-card', true);
+      this.containers.cards = this.containers.main.selectAll('div.so-card').data(this.settings.modules).enter().append('div').classed('so-card', true);
       this.containers.headers = this.containers.cards.append('h4').classed('so-card__header', true).text(function (d) {
-        return d.label;
+        return d.title;
       });
       this.containers.tables = this.containers.cards.append('table').classed('so-card__table', true);
     }
 
     function styles() {}
 
-    function accrual(data) {
+    function getTotal(data, keys) {
+      var total = {
+        key: '# Subjects Total',
+        data: d3.set(data.map(function (d) {
+          return keys.map(function (key) {
+            return d[key];
+          }).join('||');
+        })).values().sort() // TODO: use settings or data spec here
+
+      };
+      total.values = total.data.length;
+      return total;
+    }
+
+    function accrual(module) {
+      var data = module.data.data;
       var summary = []; // overall
 
       var nSubjects = {
         key: '# Subjects Total',
-        data: d3.set(data.data.map(function (d) {
+        data: d3.set(data.map(function (d) {
           return d.subjid;
         })).values().sort() // TODO: use settings or data spec here
 
       };
       nSubjects.values = nSubjects.data.length;
-      summary.push(nSubjects); // by population
+      summary.push(nSubjects);
+      var total = getTotal(data, ['subjid']);
+      console.log(nSubjects);
+      console.log(total); // by population
 
       var populations = d3.nest().key(function (d) {
         return d.population;
@@ -416,7 +575,7 @@
         };
         nSubjects.values = nSubjects.data.length;
         return nSubjects;
-      }).entries(data.data);
+      }).entries(data);
       populations.forEach(function (population) {
         population.data = population.values.data;
         population.values = population.values.values;
@@ -425,12 +584,13 @@
       return summary;
     }
 
-    function visits(data) {
+    function visits(module) {
+      var data = module.data.data;
       var summary = []; // overall
 
       var nVisits = {
         key: '# Visits',
-        data: d3.set(data.data.map(function (d) {
+        data: d3.set(data.map(function (d) {
           return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
         })).values().sort() // TODO: use settings or data spec here
 
@@ -446,7 +606,7 @@
       //        nVisits.values = nVisits.data.length;
       //        return nVisits;
       //    })
-      //    .entries(data.data);
+      //    .entries(data);
       //populations.forEach(population => {
       //    population.data = population.values.data;
       //    population.values = population.values.values;
@@ -456,12 +616,13 @@
       return summary;
     }
 
-    function forms(data) {
+    function forms(module) {
+      var data = module.data.data;
       var summary = []; // overall
 
       var nForms = {
         key: '# Pages Started',
-        data: d3.set(data.data.map(function (d) {
+        data: d3.set(data.map(function (d) {
           return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
         })).values().sort() // TODO: use settings or data spec here
 
@@ -477,7 +638,7 @@
       //        nForms.values = nForms.data.length;
       //        return nForms;
       //    })
-      //    .entries(data.data);
+      //    .entries(data);
       //populations.forEach(population => {
       //    population.data = population.values.data;
       //    population.values = population.values.values;
@@ -487,12 +648,13 @@
       return summary;
     }
 
-    function queries(data) {
+    function queries(module) {
+      var data = module.data.data;
       var summary = []; // overall
 
       var nQueries = {
         key: '# Queries Generated',
-        data: d3.set(data.data.map(function (d) {
+        data: d3.set(data.map(function (d) {
           return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
         })).values().sort() // TODO: use settings or data spec here
 
@@ -508,7 +670,7 @@
       //        nQueries.values = nQueries.data.length;
       //        return nQueries;
       //    })
-      //    .entries(data.data);
+      //    .entries(data);
       //populations.forEach(population => {
       //    population.data = population.values.data;
       //    population.values = population.values.values;
@@ -522,7 +684,7 @@
       var _this = this;
 
       var summaries = {
-        accrual: accrual,
+        participants: accrual,
         visits: visits,
         forms: forms,
         queries: queries
@@ -534,7 +696,54 @@
           return module.spec === data.spec;
         });
 
-        if (module && summaries.hasOwnProperty(data.spec)) module.summary = summaries[data.spec].call(_this, data);
+        if (module && summaries.hasOwnProperty(data.spec)) {
+          module.data = data.data;
+          module.variables = data.variables;
+          module.results.forEach(function (result) {
+            result.data = module.data;
+            result.subset.forEach(function (sub) {
+              result.data = result.data.filter(function (d) {
+                return sub.values.includes(d[sub.key]);
+              });
+            });
+            result.n = result.data.length; // handle denominators
+
+            if (result.denominator) {
+              var denominator = module.results.find(function (result1) {
+                return result1.label === result.denominator;
+              });
+
+              if (denominator) {
+                result.num = result.n;
+                result.den = denominator.value;
+                result.pct = result.num / result.den;
+                result.value = "".concat(d3.format(' 6d')(result.num), " (").concat(d3.format('2%')(result.pct), ")");
+              } else {
+                result.value = d3.format(' 6d')(result.n);
+              }
+            } else {
+              result.value = d3.format(' 6d')(result.n);
+            } // handle stratification
+
+
+            if (result.by) {
+              result.byValues = d3.nest().key(function (d) {
+                return d[result.by];
+              }).rollup(function (d) {
+                return d.length;
+              }).entries(result.data).sort(function (a, b) {
+                return a.key < b.key ? 1 : -1;
+              }).map(function (d) {
+                d.label = d.key;
+                d.num = d.values;
+                d.den = result.n;
+                d.pct = d.num / d.den;
+                d.value = "".concat(d3.format(' 6d')(d.num), " (").concat(d3.format('2%')(d.pct), ")");
+                return d;
+              });
+            }
+          });
+        }
       });
     }
 
@@ -554,19 +763,30 @@
           })
         };
 
-        if (module.summary) {
-          module.containers.rows = module.containers.table.selectAll('tr').data(module.summary).enter().append('tr').classed('so-card__table__row', true);
+        if (module.results) {
+          module.containers.rows = module.containers.table.selectAll('tr').data(module.results).enter().append('tr').classed('so-card__table__row', true);
           module.containers.rows.each(function (d) {
+            var _this2 = this;
+
             var row = d3.select(this);
-            row.append('td').classed('so-card__table__row__cell so-card__table__row__cell-key', true).text(d.key);
-            row.append('td').classed('so-card__table__row__cell so-card__table__row__cell-value', true).text(d.values);
+            row.append('td').classed('so-card__table__row__cell so-card__table__row__cell-key', true).text(d.label);
+            row.append('td').classed('so-card__table__row__cell so-card__table__row__cell-value', true).text(d.value);
+
+            if (d.byValues) {
+              row.classed('so-card__table__row--by-group', true);
+              d.byValues.forEach(function (byValue) {
+                var el = document.createElement('tr');
+
+                _this2.parentNode.insertBefore(el, _this2.nextSibling);
+
+                var byRow = d3.select(el).classed('so-card__table__row so-card__table__row--by-value', true);
+                byRow.append('td').classed('so-card__table__row__cell so-card__table__row__cell-key', true).text(byValue.label);
+                byRow.append('td').classed('so-card__table__row__cell so-card__table__row__cell-value', true).text(byValue.value);
+              });
+            }
           });
         }
-      }); //containers: {
-      //    card: this.containers.cards.filter(d => d.spec === data.spec),
-      //    cardHeader: this.containers.cardHeaders.filter(d => d.spec === data.spec),
-      //    cardTable: this.containers.cardTables.filter(d => d.spec === data.spec),
-      //},
+      });
     }
 
     function init(data) {

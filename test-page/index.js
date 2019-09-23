@@ -1,12 +1,12 @@
 const files = [
-    '../../data-library/data/clinical-trials/data-cleaning/dashboard-accrual.csv',
+    '../../data-library/data/clinical-trials/adam/adsl.csv',
     '../../data-library/data/clinical-trials/data-cleaning/visits.csv',
     '../../data-library/data/clinical-trials/data-cleaning/forms.csv',
     '../../data-library/data/clinical-trials/data-cleaning/queries.csv',
 ].map(file => {
     return {
         url: file,
-        spec: file.split('/').pop().split('.')[0].replace('dashboard-', ''),
+        spec: file.split('/').pop().split('.')[0].replace('adsl', 'participants'),
         response: fetch(file).then(response => response.text()),
     };
 });
@@ -29,7 +29,7 @@ Promise
                 //        spec: 'queries',
                 //    },
                 //    {
-                //        spec: 'accrual',
+                //        spec: 'participants',
                 //    },
                 //    {
                 //        spec: 'forms',

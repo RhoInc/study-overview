@@ -1,10 +1,11 @@
-export default function visits(data) {
+export default function visits(module) {
+    const data = module.data.data;
     const summary = [];
 
     // overall
     const nVisits = {
         key: '# Visits',
-        data: d3.set(data.data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
+        data: d3.set(data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
     };
     nVisits.values = nVisits.data.length;
     summary.push(nVisits);
@@ -20,7 +21,7 @@ export default function visits(data) {
 
     //        return nVisits;
     //    })
-    //    .entries(data.data);
+    //    .entries(data);
     //populations.forEach(population => {
     //    population.data = population.values.data;
     //    population.values = population.values.values;

@@ -32,7 +32,7 @@
 .so-card {
     display: flex;
     flex-basis: calc(50% - 40px);
-    justify-content: center;
+    justify-content: top;
     flex-direction: column;
     margin: 18px;
     border: 1px solid #aaa;
@@ -61,6 +61,10 @@
 .so-card__table__row:nth-child(2n) {
     background: #f2f2f2;
 }
+.so-card__table__row--by-group {
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+}
 .so-card__table__row__cell {
     border-width: 0 0 0 1px;
     font-size: inherit;
@@ -69,6 +73,12 @@
     padding: .5em 1em;
 }
 .so-card__table__row__cell:first-child {
-    width: 25%;
-    text-align: right;
+    width: 40%;
+}
+.so-card__table__row__cell:not(:first-child) {
+    font-family: 'Lucida Console';
+    white-space: pre;
+}
+.so-card__table__row--by-value .so-card__table__row__cell:first-child {
+    padding-left: 3em;
 }
