@@ -1,22 +1,15 @@
-import participants from './summarizeData/participants';
-import visits from './summarizeData/visits';
-import forms from './summarizeData/forms';
-import queries from './summarizeData/queries';
-
 export default function summarizeData() {
-    const summaries = {
-        participants,
-        visits,
-        forms,
-        queries,
-    };
-
     this.data.forEach(data => {
         data.variables = Object.keys(data.data[0]);
         const module = this.settings.modules.find(module => module.spec === data.spec);
-        if (module && summaries.hasOwnProperty(data.spec)) {
-            module.data = data.data;
-            module.variables = data.variables;
+
+        // Attach data properties to module.
+        if (module) {
+            for (const property in data)
+                if (!Object.keys(module).includes(property))
+                    module[property] = data[property];
+
+            // Summarize data with module results specifications.
             module.results.forEach(result => {
                 result.data = module.data;
                 result.subset.forEach(sub => {

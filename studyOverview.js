@@ -171,9 +171,11 @@
     function defaults() {
       return {
         site_col: ['site', 'site_name', 'sitename'],
-        id_col: ['subjid', 'subjectnameoridentifier'],
-        visit_col: ['visit_name', 'folderinstancename'],
+        id_col: ['usubjid', 'subjid', 'subjectnameoridentifier'],
+        visit_col: ['visit', 'avisit', 'visit_name', 'folderinstancename'],
+        visit_order_col: ['visitnum', 'avisitn', 'visit_number', 'folder_ordinal'],
         form_col: ['ecrfpagename'],
+        form_order_col: ['form_number', 'form_ordinal'],
         modules: [{
           spec: 'participants',
           title: 'Participants',
@@ -534,171 +536,60 @@
 
     function styles() {}
 
-    function getTotal(data, keys) {
-      var total = {
-        key: '# Subjects Total',
-        data: d3.set(data.map(function (d) {
-          return keys.map(function (key) {
-            return d[key];
-          }).join('||');
-        })).values().sort() // TODO: use settings or data spec here
+    function standardizeVariable(setting, variables) {
+      var _this = this;
 
-      };
-      total.values = total.data.length;
-      return total;
-    }
-
-    function accrual(module) {
-      var data = module.data.data;
-      var summary = []; // overall
-
-      var nSubjects = {
-        key: '# Subjects Total',
-        data: d3.set(data.map(function (d) {
-          return d.subjid;
-        })).values().sort() // TODO: use settings or data spec here
-
-      };
-      nSubjects.values = nSubjects.data.length;
-      summary.push(nSubjects);
-      var total = getTotal(data, ['subjid']);
-      console.log(nSubjects);
-      console.log(total); // by population
-
-      var populations = d3.nest().key(function (d) {
-        return d.population;
-      }).rollup(function (d) {
-        var nSubjects = {
-          data: d3.set(d.map(function (di) {
-            return di.subjid;
-          })).values().sort()
-        };
-        nSubjects.values = nSubjects.data.length;
-        return nSubjects;
-      }).entries(data);
-      populations.forEach(function (population) {
-        population.data = population.values.data;
-        population.values = population.values.values;
-        summary.push(population);
+      var variable = variables.find(function (variable) {
+        return _this.settings[setting].find(function (col) {
+          return col === variable.toLowerCase();
+        });
       });
-      return summary;
+      return variable;
     }
 
-    function visits(module) {
-      var data = module.data.data;
-      var summary = []; // overall
+    function standardizeData() {
+      var _this = this;
 
-      var nVisits = {
-        key: '# Visits',
-        data: d3.set(data.map(function (d) {
-          return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
-        })).values().sort() // TODO: use settings or data spec here
+      var cols = Object.keys(this.settings).filter(function (key) {
+        return /col$/.test(key);
+      });
+      var variables = cols.map(function (col) {
+        return "_".concat(col.replace(/_col$/, ''), "_").replace(/^_id_$/, '_participant_');
+      });
+      this.data.forEach(function (data) {
+        // Capture available variables.
+        data.variables = Object.keys(data.data[0]); // Standardize variables.
 
-      };
-      nVisits.values = nVisits.data.length;
-      summary.push(nVisits); // by population
-      //const populations = d3.nest()
-      //    .key(d => d.population)
-      //    .rollup(d => {
-      //        const nVisits = {
-      //            data: d3.set(d.map(di => di.subjid)).values().sort(),
-      //        };
-      //        nVisits.values = nVisits.data.length;
-      //        return nVisits;
-      //    })
-      //    .entries(data);
-      //populations.forEach(population => {
-      //    population.data = population.values.data;
-      //    population.values = population.values.values;
-      //    summary.push(population);
-      //});
+        cols.forEach(function (col) {
+          data[col] = standardizeVariable.call(_this, col, data.variables);
+        }); // Attach variable with standard name to data array.
 
-      return summary;
-    }
-
-    function forms(module) {
-      var data = module.data.data;
-      var summary = []; // overall
-
-      var nForms = {
-        key: '# Pages Started',
-        data: d3.set(data.map(function (d) {
-          return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
-        })).values().sort() // TODO: use settings or data spec here
-
-      };
-      nForms.values = nForms.data.length;
-      summary.push(nForms); // by population
-      //const populations = d3.nest()
-      //    .key(d => d.population)
-      //    .rollup(d => {
-      //        const nForms = {
-      //            data: d3.set(d.map(di => di.subjid)).values().sort(),
-      //        };
-      //        nForms.values = nForms.data.length;
-      //        return nForms;
-      //    })
-      //    .entries(data);
-      //populations.forEach(population => {
-      //    population.data = population.values.data;
-      //    population.values = population.values.values;
-      //    summary.push(population);
-      //});
-
-      return summary;
-    }
-
-    function queries(module) {
-      var data = module.data.data;
-      var summary = []; // overall
-
-      var nQueries = {
-        key: '# Queries Generated',
-        data: d3.set(data.map(function (d) {
-          return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
-        })).values().sort() // TODO: use settings or data spec here
-
-      };
-      nQueries.values = nQueries.data.length;
-      summary.push(nQueries); // by population
-      //const populations = d3.nest()
-      //    .key(d => d.population)
-      //    .rollup(d => {
-      //        const nQueries = {
-      //            data: d3.set(d.map(di => di.subjid)).values().sort(),
-      //        };
-      //        nQueries.values = nQueries.data.length;
-      //        return nQueries;
-      //    })
-      //    .entries(data);
-      //populations.forEach(population => {
-      //    population.data = population.values.data;
-      //    population.values = population.values.values;
-      //    summary.push(population);
-      //});
-
-      return summary;
+        data.data.forEach(function (d, i) {
+          cols.forEach(function (col, j) {
+            var variable = variables[j];
+            d[variable] = d[data[col]];
+          });
+        });
+      });
     }
 
     function summarizeData() {
       var _this = this;
 
-      var summaries = {
-        participants: accrual,
-        visits: visits,
-        forms: forms,
-        queries: queries
-      };
       this.data.forEach(function (data) {
         data.variables = Object.keys(data.data[0]);
 
         var module = _this.settings.modules.find(function (module) {
           return module.spec === data.spec;
-        });
+        }); // Attach data properties to module.
 
-        if (module && summaries.hasOwnProperty(data.spec)) {
-          module.data = data.data;
-          module.variables = data.variables;
+
+        if (module) {
+          for (var property in data) {
+            if (!Object.keys(module).includes(property)) module[property] = data[property];
+          } // Summarize data with module results specifications.
+
+
           module.results.forEach(function (result) {
             result.data = module.data;
             result.subset.forEach(function (sub) {
@@ -791,6 +682,7 @@
 
     function init(data) {
       this.data = data;
+      standardizeData.call(this);
       summarizeData.call(this);
       createTable.call(this);
     }
