@@ -550,91 +550,140 @@
     function standardizeData() {
       var _this = this;
 
-      var cols = Object.keys(this.settings).filter(function (key) {
+      var dataMappings = Object.keys(this.settings).filter(function (key) {
         return /col$/.test(key);
-      });
-      var variables = cols.map(function (col) {
-        return "_".concat(col.replace(/_col$/, ''), "_").replace(/^_id_$/, '_participant_');
+      }).map(function (key) {
+        return {
+          setting: key,
+          variable: "_".concat(key.replace(/_col$/, ''), "_").replace(/^_id_$/, '_participant_')
+        };
       });
       this.data.forEach(function (data) {
         // Capture available variables.
-        data.variables = Object.keys(data.data[0]); // Standardize variables.
+        var variables = Object.keys(data.data[0]); // Standardize variables.
 
-        cols.forEach(function (col) {
-          data[col] = standardizeVariable.call(_this, col, data.variables);
+        dataMappings.forEach(function (dataMapping) {
+          data[dataMapping.setting] = standardizeVariable.call(_this, dataMapping.setting, variables);
         }); // Attach variable with standard name to data array.
 
         data.data.forEach(function (d, i) {
-          cols.forEach(function (col, j) {
-            var variable = variables[j];
-            d[variable] = d[data[col]];
+          dataMappings.forEach(function (dataMapping, j) {
+            d[dataMapping.variable] = d[data[dataMapping.setting]];
           });
+        }); // Attach available variables to data object.
+
+        data.variables = Object.keys(data.data[0]);
+      });
+    }
+
+    function attachData(data) {
+      for (var property in data) {
+        if (!Object.keys(this).includes(property)) this[property] = data[property];
+      }
+    }
+
+    function filterData(result) {
+      result.data = this.data;
+      result.by = this.by;
+      result.subset.forEach(function (sub) {
+        result.data = result.data.filter(function (d) {
+          return sub.values.includes(d[sub.key]);
         });
+      });
+      result.by.values.forEach(function (value) {
+        value.data = value.value !== 'Total' ? result.data.filter(function (d) {
+          return d[result.by.key] === value.value;
+        }) : result.data.slice();
+      });
+    }
+
+    function calculateNumerator(result) {
+      result.n = result.data.length;
+      this.by.values.forEach(function (value) {
+        value.n = value.data.length;
+      });
+    }
+
+    function calculateDenominator(result) {
+      if (result.denominator) {
+        var denominator = this.results.find(function (result1) {
+          return result1.label === result.denominator;
+        });
+
+        if (denominator) {
+          result.num = result.n;
+          result.den = denominator.value;
+          result.pct = result.num / result.den;
+          result.value = "".concat(d3.format(' 6d')(result.num), " (").concat(d3.format('2%')(result.pct), ")");
+        } else {
+          result.value = d3.format(' 6d')(result.n);
+        }
+      } else {
+        result.value = d3.format(' 6d')(result.n);
+      }
+    }
+
+    function stratifyRowWise(result) {
+      if (result.by) {
+        result.byValues = d3.nest().key(function (d) {
+          return d[result.by];
+        }).rollup(function (d) {
+          return d.length;
+        }).entries(result.data).sort(function (a, b) {
+          return a.key < b.key ? 1 : -1;
+        }).map(function (d) {
+          d.label = d.key;
+          d.num = d.values;
+          d.den = result.n;
+          d.pct = d.num / d.den;
+          d.value = "".concat(d3.format(' 6d')(d.num), " (").concat(d3.format('2%')(d.pct), ")");
+          return d;
+        });
+      }
+    }
+
+    function calculateResults() {
+      var _this = this;
+
+      // Summarize data with module results specifications.
+      this.results.forEach(function (result) {
+        result.data = _this.data;
+        filterData.call(_this, result);
+        calculateNumerator.call(_this, result);
+        calculateDenominator.call(_this, result);
+        stratifyRowWise.call(_this, result); //stratifyColWise.call(this, result);
       });
     }
 
     function summarizeData() {
       var _this = this;
 
+      var by = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       this.data.forEach(function (data) {
-        data.variables = Object.keys(data.data[0]);
-
+        // Match data spec to module.
         var module = _this.settings.modules.find(function (module) {
           return module.spec === data.spec;
         }); // Attach data properties to module.
 
 
         if (module) {
-          for (var property in data) {
-            if (!Object.keys(module).includes(property)) module[property] = data[property];
-          } // Summarize data with module results specifications.
-
-
-          module.results.forEach(function (result) {
-            result.data = module.data;
-            result.subset.forEach(function (sub) {
-              result.data = result.data.filter(function (d) {
-                return sub.values.includes(d[sub.key]);
-              });
-            });
-            result.n = result.data.length; // handle denominators
-
-            if (result.denominator) {
-              var denominator = module.results.find(function (result1) {
-                return result1.label === result.denominator;
-              });
-
-              if (denominator) {
-                result.num = result.n;
-                result.den = denominator.value;
-                result.pct = result.num / result.den;
-                result.value = "".concat(d3.format(' 6d')(result.num), " (").concat(d3.format('2%')(result.pct), ")");
-              } else {
-                result.value = d3.format(' 6d')(result.n);
-              }
-            } else {
-              result.value = d3.format(' 6d')(result.n);
-            } // handle stratification
-
-
-            if (result.by) {
-              result.byValues = d3.nest().key(function (d) {
-                return d[result.by];
-              }).rollup(function (d) {
-                return d.length;
-              }).entries(result.data).sort(function (a, b) {
-                return a.key < b.key ? 1 : -1;
-              }).map(function (d) {
-                d.label = d.key;
-                d.num = d.values;
-                d.den = result.n;
-                d.pct = d.num / d.den;
-                d.value = "".concat(d3.format(' 6d')(d.num), " (").concat(d3.format('2%')(d.pct), ")");
-                return d;
-              });
-            }
-          });
-        }
+          attachData.call(module, data);
+          module.by = {
+            key: by,
+            values: module.variables.includes(by) ? d3.set(data.data.map(function (d) {
+              return d[by];
+            })).values().sort().map(function (value) {
+              return {
+                value: value
+              };
+            }).concat({
+              value: 'Total'
+            }) : [{
+              value: 'Total'
+            }]
+          };
+          calculateResults.call(module);
+        } else console.warn("Data specification [ ".concat(data.spec, " ] is invalid."));
       });
     }
 
@@ -683,7 +732,7 @@
     function init(data) {
       this.data = data;
       standardizeData.call(this);
-      summarizeData.call(this);
+      summarizeData.call(this, '_site_');
       createTable.call(this);
     }
 
