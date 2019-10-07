@@ -599,12 +599,14 @@
 
     function calculateNumerator(result) {
       result.n = result.data.length;
-      this.by.values.forEach(function (value) {
+      result.by.values.forEach(function (value) {
         value.n = value.data.length;
       });
     }
 
     function calculateDenominator(result) {
+      console.log(result);
+
       if (result.denominator) {
         var denominator = this.results.find(function (result1) {
           return result1.label === result.denominator;
@@ -620,6 +622,10 @@
         }
       } else {
         result.value = d3.format(' 6d')(result.n);
+        result.by.values.forEach(function (value) {
+          console.log(value);
+          value.value = d3.format(' 6d')(value.n);
+        });
       }
     }
 
