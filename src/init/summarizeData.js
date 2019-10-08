@@ -10,16 +10,19 @@ export default function summarizeData(by = null) {
         // Attach data properties to module.
         if (module) {
             attachData.call(module, data);
-            const summarize = (data, row = null, col = null) => {
-                const keys = [row,col]
-                    .filter(key => key !== null && data[0].hasOwnProperty(key));
-                console.log(keys);
+
+            const nest = (data, key, rollup = d => d.length) => {
                 const nested = d3.nest()
-                    .key(d => keys.map(key => d[key]).join(':|:'))
-                    .rollup(d => d.length)
+                    .key(d => d[key])
+                    .rollup(rollup)
                     .entries(data)
                     .sort((a,b) => a.key < b.key ? -1 : 1);
-                const flattened = nested
+
+                return nested;
+            };
+
+            const transpose = (data) => {
+                const transposed = data
                     .reduce(
                         (acc,cur) => {
                             acc[cur.key] = cur.values;
@@ -28,8 +31,38 @@ export default function summarizeData(by = null) {
                         {}
                     );
 
-                return flattened;
+                return transposed;
             };
+
+            const summarize = (data, row = null, col = null) => {
+                const keys = [row,col]
+                    .filter(key => key !== null && data[0].hasOwnProperty(key));
+                console.log('----------------------------------------------------------------------------------------------------');
+
+                if (row) console.log(`row: ${row}`);
+                const rowNest = row ? nest(data, row, d => d) : null;
+                const rowNestTransposed = row
+                    ? rowNest
+                        .map(row => nest(row.values, col))
+                        .map(row => transpose(row))
+                    : null;
+                console.table(rowNestTransposed);
+
+                if (col) console.log(`col: ${col}`);
+                const colNest = col ? nest(data, col) : null;
+                const colNestTransposed = col
+                    ? transpose(colNest)
+                    : null;
+                console.table(colNestTransposed);
+
+                //console.log(colNestTransposed);
+                //console.log(rowNestTransposed);
+                //const tabulated = [...colNestTransposed, ...rowNestTransposed]
+                //console.log(tabulated);
+
+                //return tabulated;
+            };
+
             module.results.forEach(result => {
                 result.data = module.data.slice();
                 result.subset.forEach(sub => {

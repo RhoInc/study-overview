@@ -596,27 +596,51 @@
         if (module) {
           attachData.call(module, data);
 
+          var nest = function nest(data, key) {
+            var rollup = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (d) {
+              return d.length;
+            };
+            var nested = d3.nest().key(function (d) {
+              return d[key];
+            }).rollup(rollup).entries(data).sort(function (a, b) {
+              return a.key < b.key ? -1 : 1;
+            });
+            return nested;
+          };
+
+          var transpose = function transpose(data) {
+            var transposed = data.reduce(function (acc, cur) {
+              acc[cur.key] = cur.values;
+              return acc;
+            }, {});
+            return transposed;
+          };
+
           var summarize = function summarize(data) {
             var row = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             var col = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
             var keys = [row, col].filter(function (key) {
               return key !== null && data[0].hasOwnProperty(key);
             });
-            console.log(keys);
-            var nested = d3.nest().key(function (d) {
-              return keys.map(function (key) {
-                return d[key];
-              }).join(':|:');
-            }).rollup(function (d) {
-              return d.length;
-            }).entries(data).sort(function (a, b) {
-              return a.key < b.key ? -1 : 1;
-            });
-            var flattened = nested.reduce(function (acc, cur) {
-              acc[cur.key] = cur.values;
-              return acc;
-            }, {});
-            return flattened;
+            console.log('----------------------------------------------------------------------------------------------------');
+            if (row) console.log("row: ".concat(row));
+            var rowNest = row ? nest(data, row, function (d) {
+              return d;
+            }) : null;
+            var rowNestTransposed = row ? rowNest.map(function (row) {
+              return nest(row.values, col);
+            }).map(function (row) {
+              return transpose(row);
+            }) : null;
+            console.table(rowNestTransposed);
+            if (col) console.log("col: ".concat(col));
+            var colNest = col ? nest(data, col) : null;
+            var colNestTransposed = col ? transpose(colNest) : null;
+            console.table(colNestTransposed); //console.log(colNestTransposed);
+            //console.log(rowNestTransposed);
+            //const tabulated = [...colNestTransposed, ...rowNestTransposed]
+            //console.log(tabulated);
+            //return tabulated;
           };
 
           module.results.forEach(function (result) {
