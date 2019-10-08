@@ -9,14 +9,25 @@ export default function calculateDenominator(result) {
             result.den = denominator.value;
             result.pct = result.num/result.den;
             result.value = `${d3.format(' 6d')(result.num)} (${d3.format('2%')(result.pct)})`;
+
+            result.by.values.forEach(value => {
+                value.num = value.n;
+                value.den = denominator.by.values
+                    .find(value1 => value1.value === value.value);
+                value.pct = result.num/result.den;
+                value.value = `${d3.format(' 6d')(result.num)} (${d3.format('2%')(result.pct)})`;
+            });
         } else {
             result.value = d3.format(' 6d')(result.n);
+
+            result.by.values.forEach(value => {
+                value.value = d3.format(' 6d')(value.n);
+            });
         }
     } else {
         result.value = d3.format(' 6d')(result.n);
 
         result.by.values.forEach(value => {
-            console.log(value);
             value.value = d3.format(' 6d')(value.n);
         });
     }
