@@ -582,85 +582,6 @@
       }
     }
 
-    function filterData(result) {
-      result.data = this.data;
-      result.by = this.by;
-      result.subset.forEach(function (sub) {
-        result.data = result.data.filter(function (d) {
-          return sub.values.includes(d[sub.key]);
-        });
-      });
-      result.by.values.forEach(function (value) {
-        value.data = value.value !== 'Total' ? result.data.filter(function (d) {
-          return d[result.by.key] === value.value;
-        }) : result.data.slice();
-      });
-    }
-
-    function calculateNumerator(result) {
-      result.n = result.data.length;
-      result.by.values.forEach(function (value) {
-        value.n = value.data.length;
-      });
-    }
-
-    function calculateDenominator(result) {
-      console.log(result);
-
-      if (result.denominator) {
-        var denominator = this.results.find(function (result1) {
-          return result1.label === result.denominator;
-        });
-
-        if (denominator) {
-          result.num = result.n;
-          result.den = denominator.value;
-          result.pct = result.num / result.den;
-          result.value = "".concat(d3.format(' 6d')(result.num), " (").concat(d3.format('2%')(result.pct), ")");
-        } else {
-          result.value = d3.format(' 6d')(result.n);
-        }
-      } else {
-        result.value = d3.format(' 6d')(result.n);
-        result.by.values.forEach(function (value) {
-          console.log(value);
-          value.value = d3.format(' 6d')(value.n);
-        });
-      }
-    }
-
-    function stratifyRowWise(result) {
-      if (result.by) {
-        result.byValues = d3.nest().key(function (d) {
-          return d[result.by];
-        }).rollup(function (d) {
-          return d.length;
-        }).entries(result.data).sort(function (a, b) {
-          return a.key < b.key ? 1 : -1;
-        }).map(function (d) {
-          d.label = d.key;
-          d.num = d.values;
-          d.den = result.n;
-          d.pct = d.num / d.den;
-          d.value = "".concat(d3.format(' 6d')(d.num), " (").concat(d3.format('2%')(d.pct), ")");
-          return d;
-        });
-      }
-    }
-
-    function calculateResults() {
-      var _this = this;
-
-      // Summarize data with module results specifications.
-      this.results.forEach(function (result) {
-        result.data = _this.data;
-        filterData.call(_this, result);
-        calculateNumerator.call(_this, result);
-        calculateDenominator.call(_this, result);
-        stratifyRowWise.call(_this, result); //stratifyColWise.call(this, result);
-      });
-    }
-
     function summarizeData() {
       var _this = this;
 
@@ -674,63 +595,54 @@
 
         if (module) {
           attachData.call(module, data);
-          module.by = {
-            key: by,
-            values: module.variables.includes(by) ? d3.set(data.data.map(function (d) {
-              return d[by];
-            })).values().sort().map(function (value) {
-              return {
-                value: value
-              };
-            }).concat({
-              value: 'Total'
-            }) : [{
-              value: 'Total'
-            }]
+
+          var summarize = function summarize(data) {
+            var row = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+            var col = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+            var keys = [row, col].filter(function (key) {
+              return key !== null && data[0].hasOwnProperty(key);
+            });
+            console.log(keys);
+            var nested = d3.nest().key(function (d) {
+              return keys.map(function (key) {
+                return d[key];
+              }).join(':|:');
+            }).rollup(function (d) {
+              return d.length;
+            }).entries(data).sort(function (a, b) {
+              return a.key < b.key ? -1 : 1;
+            });
+            var flattened = nested.reduce(function (acc, cur) {
+              acc[cur.key] = cur.values;
+              return acc;
+            }, {});
+            return flattened;
           };
-          calculateResults.call(module);
-        } else console.warn("Data specification [ ".concat(data.spec, " ] is invalid."));
-      });
-    }
 
-    function createTable() {
-      var _this = this;
-
-      this.settings.modules.forEach(function (module) {
-        module.containers = {
-          card: _this.containers.cards.filter(function (d) {
-            return d.spec === module.spec;
-          }),
-          header: _this.containers.headers.filter(function (d) {
-            return d.spec === module.spec;
-          }),
-          table: _this.containers.tables.filter(function (d) {
-            return d.spec === module.spec;
-          })
-        };
-
-        if (module.results) {
-          module.containers.rows = module.containers.table.selectAll('tr').data(module.results).enter().append('tr').classed('so-card__table__row', true);
-          module.containers.rows.each(function (d) {
-            var _this2 = this;
-
-            var row = d3.select(this);
-            row.append('td').classed('so-card__table__row__cell so-card__table__row__cell-key', true).text(d.label);
-            row.append('td').classed('so-card__table__row__cell so-card__table__row__cell-value', true).text(d.value);
-
-            if (d.byValues) {
-              row.classed('so-card__table__row--by-group', true);
-              d.byValues.forEach(function (byValue) {
-                var el = document.createElement('tr');
-
-                _this2.parentNode.insertBefore(el, _this2.nextSibling);
-
-                var byRow = d3.select(el).classed('so-card__table__row so-card__table__row--by-value', true);
-                byRow.append('td').classed('so-card__table__row__cell so-card__table__row__cell-key', true).text(byValue.label);
-                byRow.append('td').classed('so-card__table__row__cell so-card__table__row__cell-value', true).text(byValue.value);
+          module.results.forEach(function (result) {
+            result.data = module.data.slice();
+            result.subset.forEach(function (sub) {
+              result.data = result.data.filter(function (d) {
+                return sub.values.includes(d[sub.key]);
               });
-            }
-          });
+            });
+            result.summary = summarize(result.data, result.by, by); //console.log(result.summary);
+          }); //module.by = {
+          //    key: by,
+          //    values: module.variables.includes(by)
+          //        ? d3.set(data.data.map(d => d[by]))
+          //            .values()
+          //            .sort()
+          //            .map(value => {
+          //                return {
+          //                    value,
+          //                };
+          //            }).concat({ value: 'Total'})
+          //        : [{ value: 'Total' }],
+          //};
+          //calculateResults.call(module);
+        } else {
+          console.warn("Data specification [ ".concat(data.spec, " ] is invalid."));
         }
       });
     }
@@ -738,8 +650,7 @@
     function init(data) {
       this.data = data;
       standardizeData.call(this);
-      summarizeData.call(this, '_site_');
-      createTable.call(this);
+      summarizeData.call(this, '_site_'); //createTable.call(this);
     }
 
     function destroy() {}
