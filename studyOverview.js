@@ -594,19 +594,25 @@
 
 
         if (module) {
-          attachData.call(module, data);
+          attachData.call(module, data); // nest by key variable
 
           var nest = function nest(data, key) {
             var rollup = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (d) {
               return d.length;
             };
+            var overall = data.map(function (d) {
+              var datum = Object.assign({}, d);
+              datum[key] = '_overall_';
+              return datum;
+            });
             var nested = d3.nest().key(function (d) {
               return d[key];
-            }).rollup(rollup).entries(data).sort(function (a, b) {
+            }).rollup(rollup).entries(key ? data.concat(overall) : overall).sort(function (a, b) {
               return a.key < b.key ? -1 : 1;
             });
             return nested;
-          };
+          }; // transpose key values
+
 
           var transpose = function transpose(data) {
             var transposed = data.reduce(function (acc, cur) {
@@ -619,10 +625,12 @@
           var summarize = function summarize(data) {
             var row = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             var col = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-            var keys = [row, col].filter(function (key) {
-              return key !== null && data[0].hasOwnProperty(key);
-            });
-            console.log('----------------------------------------------------------------------------------------------------');
+            console.log('----------------------------------------------------------------------------------------------------'); // summarize by col variable
+
+            console.log("col: ".concat(col));
+            var colNest = nest(data, col);
+            var colNestTransposed = transpose(colNest); // summarize by row variable
+
             if (row) console.log("row: ".concat(row));
             var rowNest = row ? nest(data, row, function (d) {
               return d;
@@ -632,15 +640,10 @@
             }).map(function (row) {
               return transpose(row);
             }) : null;
-            console.table(rowNestTransposed);
-            if (col) console.log("col: ".concat(col));
-            var colNest = col ? nest(data, col) : null;
-            var colNestTransposed = col ? transpose(colNest) : null;
-            console.table(colNestTransposed); //console.log(colNestTransposed);
-            //console.log(rowNestTransposed);
-            //const tabulated = [...colNestTransposed, ...rowNestTransposed]
-            //console.log(tabulated);
-            //return tabulated;
+            return {
+              row: colNestTransposed,
+              rows: rowNestTransposed
+            };
           };
 
           module.results.forEach(function (result) {
@@ -650,7 +653,8 @@
                 return sub.values.includes(d[sub.key]);
               });
             });
-            result.summary = summarize(result.data, result.by, by); //console.log(result.summary);
+            result.summary = summarize(result.data, result.by, by);
+            console.log(result.summary);
           }); //module.by = {
           //    key: by,
           //    values: module.variables.includes(by)
@@ -674,7 +678,8 @@
     function init(data) {
       this.data = data;
       standardizeData.call(this);
-      summarizeData.call(this, '_site_'); //createTable.call(this);
+      summarizeData.call(this); //, '_site_');
+      //createTable.call(this);
     }
 
     function destroy() {}

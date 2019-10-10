@@ -11,16 +11,25 @@ export default function summarizeData(by = null) {
         if (module) {
             attachData.call(module, data);
 
+            // nest by key variable
             const nest = (data, key, rollup = d => d.length) => {
+                const overall = data
+                    .map(d => {
+                        const datum = Object.assign({}, d);
+                        datum[key] = '_overall_';
+
+                        return datum;
+                    });
                 const nested = d3.nest()
                     .key(d => d[key])
                     .rollup(rollup)
-                    .entries(data)
+                    .entries(key ? data.concat(overall) : overall)
                     .sort((a,b) => a.key < b.key ? -1 : 1);
 
                 return nested;
             };
 
+            // transpose key values
             const transpose = (data) => {
                 const transposed = data
                     .reduce(
@@ -35,10 +44,14 @@ export default function summarizeData(by = null) {
             };
 
             const summarize = (data, row = null, col = null) => {
-                const keys = [row,col]
-                    .filter(key => key !== null && data[0].hasOwnProperty(key));
                 console.log('----------------------------------------------------------------------------------------------------');
 
+                // summarize by col variable
+                console.log(`col: ${col}`);
+                const colNest = nest(data, col);
+                const colNestTransposed = transpose(colNest);
+
+                // summarize by row variable
                 if (row) console.log(`row: ${row}`);
                 const rowNest = row ? nest(data, row, d => d) : null;
                 const rowNestTransposed = row
@@ -46,21 +59,11 @@ export default function summarizeData(by = null) {
                         .map(row => nest(row.values, col))
                         .map(row => transpose(row))
                     : null;
-                console.table(rowNestTransposed);
 
-                if (col) console.log(`col: ${col}`);
-                const colNest = col ? nest(data, col) : null;
-                const colNestTransposed = col
-                    ? transpose(colNest)
-                    : null;
-                console.table(colNestTransposed);
-
-                //console.log(colNestTransposed);
-                //console.log(rowNestTransposed);
-                //const tabulated = [...colNestTransposed, ...rowNestTransposed]
-                //console.log(tabulated);
-
-                //return tabulated;
+                return {
+                    row: colNestTransposed,
+                    rows: rowNestTransposed,
+                };
             };
 
             module.results.forEach(result => {
@@ -74,7 +77,7 @@ export default function summarizeData(by = null) {
                     result.by,
                     by
                 );
-                //console.log(result.summary);
+                console.log(result.summary);
             });
             //module.by = {
             //    key: by,
