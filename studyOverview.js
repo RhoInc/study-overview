@@ -328,7 +328,7 @@
             }],
             summary: 'count',
             denominator: '# Queries',
-            by: 'folderinstancename'
+            by: 'queryage'
           }, {
             label: 'Answered Queries by Marking Group',
             subset: [{
