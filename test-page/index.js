@@ -1,8 +1,8 @@
 const files = [
-    '../../data-library/data/clinical-trials/adam/adsl.csv',
-    '../../data-library/data/clinical-trials/data-cleaning/visits.csv',
-    '../../data-library/data/clinical-trials/data-cleaning/forms.csv',
-    '../../data-library/data/clinical-trials/data-cleaning/queries.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adsl.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/visits.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/queries.csv',
 ].map(file => {
     return {
         url: file,
@@ -24,17 +24,6 @@ Promise
         const instance = studyOverview(
             '#container',
             {
-                //modules: [
-                //    {
-                //        spec: 'queries',
-                //    },
-                //    {
-                //        spec: 'participants',
-                //    },
-                //    {
-                //        spec: 'forms',
-                //    },
-                //],
             }
         );
         instance.init(data);

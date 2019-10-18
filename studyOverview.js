@@ -171,11 +171,9 @@
     function defaults() {
       return {
         site_col: ['site', 'site_name', 'sitename'],
-        id_col: ['usubjid', 'subjid', 'subjectnameoridentifier'],
-        visit_col: ['visit', 'avisit', 'visit_name', 'folderinstancename'],
-        visit_order_col: ['visitnum', 'avisitn', 'visit_number', 'folder_ordinal'],
+        id_col: ['subjid', 'subjectnameoridentifier'],
+        visit_col: ['visit_name', 'folderinstancename'],
         form_col: ['ecrfpagename'],
-        form_order_col: ['form_number', 'form_ordinal'],
         modules: [{
           spec: 'participants',
           title: 'Participants',
@@ -536,154 +534,216 @@
 
     function styles() {}
 
-    function standardizeVariable(setting, variables) {
-      var _this = this;
+    function getTotal(data, keys) {
+      var total = {
+        key: '# Subjects Total',
+        data: d3.set(data.map(function (d) {
+          return keys.map(function (key) {
+            return d[key];
+          }).join('||');
+        })).values().sort() // TODO: use settings or data spec here
 
-      var variable = variables.find(function (variable) {
-        return _this.settings[setting].find(function (col) {
-          return col === variable.toLowerCase();
-        });
-      });
-      return variable;
+      };
+      total.values = total.data.length;
+      return total;
     }
 
-    function standardizeData() {
-      var _this = this;
+    function accrual(module) {
+      var data = module.data.data;
+      var summary = []; // overall
 
-      var dataMappings = Object.keys(this.settings).filter(function (key) {
-        return /col$/.test(key);
-      }).map(function (key) {
-        return {
-          setting: key,
-          variable: "_".concat(key.replace(/_col$/, ''), "_").replace(/^_id_$/, '_participant_')
+      var nSubjects = {
+        key: '# Subjects Total',
+        data: d3.set(data.map(function (d) {
+          return d.subjid;
+        })).values().sort() // TODO: use settings or data spec here
+
+      };
+      nSubjects.values = nSubjects.data.length;
+      summary.push(nSubjects);
+      var total = getTotal(data, ['subjid']);
+      console.log(nSubjects);
+      console.log(total); // by population
+
+      var populations = d3.nest().key(function (d) {
+        return d.population;
+      }).rollup(function (d) {
+        var nSubjects = {
+          data: d3.set(d.map(function (di) {
+            return di.subjid;
+          })).values().sort()
         };
+        nSubjects.values = nSubjects.data.length;
+        return nSubjects;
+      }).entries(data);
+      populations.forEach(function (population) {
+        population.data = population.values.data;
+        population.values = population.values.values;
+        summary.push(population);
       });
-      this.data.forEach(function (data) {
-        // Capture available variables.
-        var variables = Object.keys(data.data[0]); // Standardize variables.
-
-        dataMappings.forEach(function (dataMapping) {
-          data[dataMapping.setting] = standardizeVariable.call(_this, dataMapping.setting, variables);
-        }); // Attach variable with standard name to data array.
-
-        data.data.forEach(function (d, i) {
-          dataMappings.forEach(function (dataMapping, j) {
-            d[dataMapping.variable] = d[data[dataMapping.setting]];
-          });
-        }); // Attach available variables to data object.
-
-        data.variables = Object.keys(data.data[0]);
-      });
+      return summary;
     }
 
-    function attachData(data) {
-      for (var property in data) {
-        if (!Object.keys(this).includes(property)) this[property] = data[property];
-      }
+    function visits(module) {
+      var data = module.data.data;
+      var summary = []; // overall
+
+      var nVisits = {
+        key: '# Visits',
+        data: d3.set(data.map(function (d) {
+          return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
+        })).values().sort() // TODO: use settings or data spec here
+
+      };
+      nVisits.values = nVisits.data.length;
+      summary.push(nVisits); // by population
+      //const populations = d3.nest()
+      //    .key(d => d.population)
+      //    .rollup(d => {
+      //        const nVisits = {
+      //            data: d3.set(d.map(di => di.subjid)).values().sort(),
+      //        };
+      //        nVisits.values = nVisits.data.length;
+      //        return nVisits;
+      //    })
+      //    .entries(data);
+      //populations.forEach(population => {
+      //    population.data = population.values.data;
+      //    population.values = population.values.values;
+      //    summary.push(population);
+      //});
+
+      return summary;
     }
 
-    function filterData(result) {
-      result.data = this.data;
-      result.by = this.by;
-      result.subset.forEach(function (sub) {
-        result.data = result.data.filter(function (d) {
-          return sub.values.includes(d[sub.key]);
-        });
-      });
-      result.by.values.forEach(function (value) {
-        value.data = value.value !== 'Total' ? result.data.filter(function (d) {
-          return d[result.by.key] === value.value;
-        }) : result.data.slice();
-      });
+    function forms(module) {
+      var data = module.data.data;
+      var summary = []; // overall
+
+      var nForms = {
+        key: '# Pages Started',
+        data: d3.set(data.map(function (d) {
+          return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
+        })).values().sort() // TODO: use settings or data spec here
+
+      };
+      nForms.values = nForms.data.length;
+      summary.push(nForms); // by population
+      //const populations = d3.nest()
+      //    .key(d => d.population)
+      //    .rollup(d => {
+      //        const nForms = {
+      //            data: d3.set(d.map(di => di.subjid)).values().sort(),
+      //        };
+      //        nForms.values = nForms.data.length;
+      //        return nForms;
+      //    })
+      //    .entries(data);
+      //populations.forEach(population => {
+      //    population.data = population.values.data;
+      //    population.values = population.values.values;
+      //    summary.push(population);
+      //});
+
+      return summary;
     }
 
-    function calculateNumerator(result) {
-      result.n = result.data.length;
-      this.by.values.forEach(function (value) {
-        value.n = value.data.length;
-      });
-    }
+    function queries(module) {
+      var data = module.data.data;
+      var summary = []; // overall
 
-    function calculateDenominator(result) {
-      if (result.denominator) {
-        var denominator = this.results.find(function (result1) {
-          return result1.label === result.denominator;
-        });
+      var nQueries = {
+        key: '# Queries Generated',
+        data: d3.set(data.map(function (d) {
+          return "".concat(d.subjectnameoridentifier, "||").concat(d.folderinstancename, "||").concat(d.ecrfpagename);
+        })).values().sort() // TODO: use settings or data spec here
 
-        if (denominator) {
-          result.num = result.n;
-          result.den = denominator.value;
-          result.pct = result.num / result.den;
-          result.value = "".concat(d3.format(' 6d')(result.num), " (").concat(d3.format('2%')(result.pct), ")");
-        } else {
-          result.value = d3.format(' 6d')(result.n);
-        }
-      } else {
-        result.value = d3.format(' 6d')(result.n);
-      }
-    }
+      };
+      nQueries.values = nQueries.data.length;
+      summary.push(nQueries); // by population
+      //const populations = d3.nest()
+      //    .key(d => d.population)
+      //    .rollup(d => {
+      //        const nQueries = {
+      //            data: d3.set(d.map(di => di.subjid)).values().sort(),
+      //        };
+      //        nQueries.values = nQueries.data.length;
+      //        return nQueries;
+      //    })
+      //    .entries(data);
+      //populations.forEach(population => {
+      //    population.data = population.values.data;
+      //    population.values = population.values.values;
+      //    summary.push(population);
+      //});
 
-    function stratifyRowWise(result) {
-      if (result.by) {
-        result.byValues = d3.nest().key(function (d) {
-          return d[result.by];
-        }).rollup(function (d) {
-          return d.length;
-        }).entries(result.data).sort(function (a, b) {
-          return a.key < b.key ? 1 : -1;
-        }).map(function (d) {
-          d.label = d.key;
-          d.num = d.values;
-          d.den = result.n;
-          d.pct = d.num / d.den;
-          d.value = "".concat(d3.format(' 6d')(d.num), " (").concat(d3.format('2%')(d.pct), ")");
-          return d;
-        });
-      }
-    }
-
-    function calculateResults() {
-      var _this = this;
-
-      // Summarize data with module results specifications.
-      this.results.forEach(function (result) {
-        result.data = _this.data;
-        filterData.call(_this, result);
-        calculateNumerator.call(_this, result);
-        calculateDenominator.call(_this, result);
-        stratifyRowWise.call(_this, result); //stratifyColWise.call(this, result);
-      });
+      return summary;
     }
 
     function summarizeData() {
       var _this = this;
 
-      var by = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var summaries = {
+        participants: accrual,
+        visits: visits,
+        forms: forms,
+        queries: queries
+      };
       this.data.forEach(function (data) {
-        // Match data spec to module.
+        data.variables = Object.keys(data.data[0]);
+
         var module = _this.settings.modules.find(function (module) {
           return module.spec === data.spec;
-        }); // Attach data properties to module.
+        });
+
+        if (module && summaries.hasOwnProperty(data.spec)) {
+          module.data = data.data;
+          module.variables = data.variables;
+          module.results.forEach(function (result) {
+            result.data = module.data;
+            result.subset.forEach(function (sub) {
+              result.data = result.data.filter(function (d) {
+                return sub.values.includes(d[sub.key]);
+              });
+            });
+            result.n = result.data.length; // handle denominators
+
+            if (result.denominator) {
+              var denominator = module.results.find(function (result1) {
+                return result1.label === result.denominator;
+              });
+
+              if (denominator) {
+                result.num = result.n;
+                result.den = denominator.value;
+                result.pct = result.num / result.den;
+                result.value = "".concat(d3.format(' 6d')(result.num), " (").concat(d3.format('2%')(result.pct), ")");
+              } else {
+                result.value = d3.format(' 6d')(result.n);
+              }
+            } else {
+              result.value = d3.format(' 6d')(result.n);
+            } // handle stratification
 
 
-        if (module) {
-          attachData.call(module, data);
-          module.by = {
-            key: by,
-            values: module.variables.includes(by) ? d3.set(data.data.map(function (d) {
-              return d[by];
-            })).values().sort().map(function (value) {
-              return {
-                value: value
-              };
-            }).concat({
-              value: 'Total'
-            }) : [{
-              value: 'Total'
-            }]
-          };
-          calculateResults.call(module);
-        } else console.warn("Data specification [ ".concat(data.spec, " ] is invalid."));
+            if (result.by) {
+              result.byValues = d3.nest().key(function (d) {
+                return d[result.by];
+              }).rollup(function (d) {
+                return d.length;
+              }).entries(result.data).sort(function (a, b) {
+                return a.key < b.key ? 1 : -1;
+              }).map(function (d) {
+                d.label = d.key;
+                d.num = d.values;
+                d.den = result.n;
+                d.pct = d.num / d.den;
+                d.value = "".concat(d3.format(' 6d')(d.num), " (").concat(d3.format('2%')(d.pct), ")");
+                return d;
+              });
+            }
+          });
+        }
       });
     }
 
@@ -731,8 +791,7 @@
 
     function init(data) {
       this.data = data;
-      standardizeData.call(this);
-      summarizeData.call(this, '_site_');
+      summarizeData.call(this);
       createTable.call(this);
     }
 

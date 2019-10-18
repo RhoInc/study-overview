@@ -1,11 +1,9 @@
 export default function defaults() {
     return {
         site_col: ['site', 'site_name', 'sitename'],
-        id_col: ['usubjid', 'subjid', 'subjectnameoridentifier'],
-        visit_col: ['visit', 'avisit', 'visit_name', 'folderinstancename'],
-        visit_order_col: ['visitnum', 'avisitn', 'visit_number', 'folder_ordinal'],
+        id_col: ['subjid', 'subjectnameoridentifier'],
+        visit_col: ['visit_name', 'folderinstancename'],
         form_col: ['ecrfpagename'],
-        form_order_col: ['form_number', 'form_ordinal'],
         modules: [
             {
                 spec: 'participants',
