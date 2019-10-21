@@ -30,13 +30,23 @@
     flex-direction: row;
 }
 .so-card {
-    display: flex;
+    /*
+     * display: flex;
     flex-basis: calc(50% - 40px);
     justify-content: top;
     flex-direction: column;
+    */
+    display: inline-block;
+    width: calc(50% - 40px);
     margin: 18px;
     border: 1px solid #aaa;
     border-radius: 4px;
+    overflow-x: auto;
+}
+.so-card > * {
+    width: 100%;
+    vertical-align: top;
+    display: table;
 }
 .so-card__header {
     font-size: 24px;
@@ -44,7 +54,6 @@
     padding: 4px 8px;
     font-weight: lighter;
     border-bottom: 1px solid #aaa;
-    vertical-align: top;
 }
 .so-card__table {
     border-collapse: collapse;
@@ -52,6 +61,11 @@
     empty-cells: show;
     margin: 4px 8px;
     padding: 4px 8px;
+}
+.so-card__table__header {
+}
+.so-card__table__header__cell {
+    padding: .5em 1em;
 }
 .so-card__table__row {
 }
@@ -73,7 +87,7 @@
     padding: .5em 1em;
 }
 .so-card__table__row__cell:first-child {
-    width: 40%;
+    width: 25%;
 }
 .so-card__table__row__cell:not(:first-child) {
     font-family: 'Lucida Console';

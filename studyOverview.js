@@ -528,10 +528,10 @@
         main: d3.select(this.element).append('div').datum(this).classed('study-overview', true).attr('id', "study-overview".concat(document.querySelectorAll('.study-overview').length))
       };
       this.containers.cards = this.containers.main.selectAll('div.so-card').data(this.settings.modules).enter().append('div').classed('so-card', true);
-      this.containers.headers = this.containers.cards.append('h4').classed('so-card__header', true).text(function (d) {
+      this.containers.headers = this.containers.cards.append('div').append('h4').classed('so-card__header', true).text(function (d) {
         return d.title;
       });
-      this.containers.tables = this.containers.cards.append('table').classed('so-card__table', true);
+      this.containers.tables = this.containers.cards.append('div').append('table').classed('so-card__table', true);
     }
 
     function styles() {}
@@ -594,7 +594,14 @@
 
 
         if (module) {
-          attachData.call(module, data); // nest by key variable
+          attachData.call(module, data);
+
+          if (by) {
+            module.byValues = d3.set(data.data.map(function (d) {
+              return d[by];
+            })).values().sort();
+          } // nest by key variable
+
 
           var nest = function nest(data, key) {
             var rollup = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (d) {
@@ -614,9 +621,17 @@
           }; // transpose key values
 
 
-          var transpose = function transpose(data) {
+          var transpose = function transpose(data, denominators) {
+            //console.log(denominators);
             var transposed = data.reduce(function (acc, cur) {
-              acc[cur.key] = cur.values;
+              //console.log(cur.key);
+              var denominator = denominators ? denominators[cur.key].numerator : null; //console.log(denominator);
+
+              acc[cur.key] = {
+                numerator: cur.values,
+                denominator: denominator,
+                value: denominator ? "".concat(d3.format('6,d')(cur.values), " (").concat(d3.format('2%')(cur.values / denominator), ")") : d3.format('6,d')(cur.values)
+              };
               return acc;
             }, {});
             return transposed;
@@ -625,20 +640,28 @@
           var summarize = function summarize(data) {
             var row = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             var col = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-            console.log('----------------------------------------------------------------------------------------------------'); // summarize by col variable
-
+            var denominators = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+            // summarize by col variable
             console.log("col: ".concat(col));
-            var colNest = nest(data, col);
-            var colNestTransposed = transpose(colNest); // summarize by row variable
+            var colNest = nest(data, col); //console.log(data);
 
-            if (row) console.log("row: ".concat(row));
+            var colNestTransposed = transpose(colNest, denominators); // summarize by row variable
+
+            console.log("row: ".concat(row));
             var rowNest = row ? nest(data, row, function (d) {
               return d;
             }) : null;
+            if (row) console.log(colNestTransposed);
             var rowNestTransposed = row ? rowNest.map(function (row) {
-              return nest(row.values, col);
+              //console.log(row);
+              var nested = nest(row.values, col);
+              nested.key = row.key;
+              return nested;
             }).map(function (row) {
-              return transpose(row);
+              console.log(row);
+              var transposed = transpose(row, colNestTransposed);
+              transposed.key = row.key;
+              return transposed;
             }) : null;
             return {
               row: colNestTransposed,
@@ -647,14 +670,18 @@
           };
 
           module.results.forEach(function (result) {
+            console.log('----------------------------------------------------------------------------------------------------');
+            console.log(result.label);
             result.data = module.data.slice();
             result.subset.forEach(function (sub) {
               result.data = result.data.filter(function (d) {
                 return sub.values.includes(d[sub.key]);
               });
             });
-            result.summary = summarize(result.data, result.by, by);
-            console.log(result.summary);
+            result.denominators = result.denominator ? module.results.find(function (result1) {
+              return result1.label === result.denominator;
+            }).summary.row : null;
+            result.summary = summarize(result.data, result.by, by, result.denominators); //console.log(result.summary);
           }); //module.by = {
           //    key: by,
           //    values: module.variables.includes(by)
@@ -675,11 +702,84 @@
       });
     }
 
+    function createTable() {
+      var _this = this;
+
+      var by = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      this.settings.modules.forEach(function (module) {
+        module.containers = {
+          card: _this.containers.cards.filter(function (d) {
+            return d.spec === module.spec;
+          }),
+          header: _this.containers.headers.filter(function (d) {
+            return d.spec === module.spec;
+          }),
+          table: _this.containers.tables.filter(function (d) {
+            return d.spec === module.spec;
+          })
+        };
+
+        if (by) {
+          module.containers.header = module.containers.table.append('thead').classed('so-card__table__header', true).append('tr').selectAll('th').data([''].concat(_toConsumableArray(module.byValues), ['Overall'])).enter().append('th').classed('so-card__table__header__cell', true).text(function (d) {
+            return d;
+          });
+        }
+
+        if (module.results) {
+          module.containers.body = module.containers.table.append('tbody');
+          module.containers.rows = module.containers.body.selectAll('tr').data(module.results).enter().append('tr').classed('so-card__table__row', true);
+          module.containers.rows.each(function (d) {
+            var _this2 = this;
+
+            //console.log(d);
+            var row = d3.select(this);
+            row.selectAll('td').data(d3.merge([[{
+              value: d.label
+            }], [].concat(_toConsumableArray(module.byValues), ['_overall_']).map(function (cell) {
+              return d.summary.row[cell] || {
+                numerator: null,
+                value: null
+              };
+            })])).enter().append('td').attr('class', function (d, i) {
+              return "so-card__table__row__cell ".concat(i === 0 ? 'so-card__table__row__cell-key' : 'so-card__table__row__cell-value');
+            }).text(function (di) {
+              return di.value || '';
+            });
+
+            if (d.summary.rows) {
+              row.classed('so-card__table__row--by-group', true);
+              d.summary.rows.filter(function (row) {
+                return row.key !== '_overall_';
+              }).reverse().forEach(function (row) {
+                var el = document.createElement('tr');
+
+                _this2.parentNode.insertBefore(el, _this2.nextSibling);
+
+                var byRow = d3.select(el).classed('so-card__table__row so-card__table__row--by-value', true);
+                byRow.selectAll('td').data(d3.merge([[{
+                  value: row.key
+                }], [].concat(_toConsumableArray(module.byValues), ['_overall_']).map(function (cell) {
+                  return row[cell] || {
+                    numerator: null,
+                    value: null
+                  };
+                })])).enter().append('td').attr('class', function (di, i) {
+                  return "so-card__table__row__cell ".concat(i === 0 ? 'so-card__table__row__cell-key' : 'so-card__table__row__cell-value');
+                }).text(function (di) {
+                  return di.value || '';
+                });
+              });
+            }
+          });
+        }
+      });
+    }
+
     function init(data) {
       this.data = data;
       standardizeData.call(this);
-      summarizeData.call(this); //, '_site_');
-      //createTable.call(this);
+      summarizeData.call(this, '_site_');
+      createTable.call(this, '_site_');
     }
 
     function destroy() {}

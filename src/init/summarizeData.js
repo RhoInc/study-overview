@@ -2,6 +2,7 @@ import attachData from './summarizeData/attachData';
 import calculateResults from './summarizeData/calculateResults';
 
 export default function summarizeData(by = null) {
+    const byValues = [];
     this.data.forEach(data => {
         // Match data spec to module.
         const module = this.settings.modules
@@ -10,6 +11,12 @@ export default function summarizeData(by = null) {
         // Attach data properties to module.
         if (module) {
             attachData.call(module, data);
+
+            if (by) {
+                module.byValues = d3.set(data.data.map(d => d[by]))
+                    .values()
+                    .sort();
+            }
 
             // nest by key variable
             const nest = (data, key, rollup = d => d.length) => {
@@ -30,11 +37,21 @@ export default function summarizeData(by = null) {
             };
 
             // transpose key values
-            const transpose = (data) => {
+            const transpose = (data, denominators) => {
+                //console.log(denominators);
                 const transposed = data
                     .reduce(
                         (acc,cur) => {
-                            acc[cur.key] = cur.values;
+                            //console.log(cur.key);
+                            const denominator = denominators ? denominators[cur.key].numerator : null;
+                            //console.log(denominator);
+                            acc[cur.key] = {
+                                numerator: cur.values,
+                                denominator: denominator,
+                                value: denominator
+                                    ? `${d3.format('6,d')(cur.values)} (${d3.format('2%')(cur.values/denominator)})`
+                                    : d3.format('6,d')(cur.values),
+                            };
                             return acc;
                         },
                         {}
@@ -43,21 +60,32 @@ export default function summarizeData(by = null) {
                 return transposed;
             };
 
-            const summarize = (data, row = null, col = null) => {
-                console.log('----------------------------------------------------------------------------------------------------');
+            const summarize = (data, row = null, col = null, denominators = null) => {
 
                 // summarize by col variable
                 console.log(`col: ${col}`);
                 const colNest = nest(data, col);
-                const colNestTransposed = transpose(colNest);
+                //console.log(data);
+                const colNestTransposed = transpose(colNest, denominators);
 
                 // summarize by row variable
-                if (row) console.log(`row: ${row}`);
+                console.log(`row: ${row}`);
                 const rowNest = row ? nest(data, row, d => d) : null;
+                if (row) console.log(colNestTransposed);
                 const rowNestTransposed = row
                     ? rowNest
-                        .map(row => nest(row.values, col))
-                        .map(row => transpose(row))
+                        .map(row => {
+                            //console.log(row);
+                            const nested = nest(row.values, col);
+                            nested.key = row.key;
+                            return nested;
+                        })
+                        .map(row => {
+                            console.log(row);
+                            const transposed = transpose(row, colNestTransposed);
+                            transposed.key = row.key;
+                            return transposed;
+                        })
                     : null;
 
                 return {
@@ -67,17 +95,26 @@ export default function summarizeData(by = null) {
             };
 
             module.results.forEach(result => {
+                console.log('----------------------------------------------------------------------------------------------------');
+                console.log(result.label);
                 result.data = module.data.slice();
                 result.subset.forEach(sub => {
                     result.data = result.data
                         .filter(d => sub.values.includes(d[sub.key]));
                 });
+                result.denominators = result.denominator
+                    ? module.results
+                        .find(result1 => result1.label === result.denominator)
+                        .summary
+                        .row
+                    : null;
                 result.summary = summarize(
                     result.data,
                     result.by,
-                    by
+                    by,
+                    result.denominators
                 );
-                console.log(result.summary);
+                //console.log(result.summary);
             });
             //module.by = {
             //    key: by,
