@@ -38,13 +38,10 @@ export default function summarizeData(by = null) {
 
             // transpose key values
             const transpose = (data, denominators) => {
-                //console.log(denominators);
                 const transposed = data
                     .reduce(
                         (acc,cur) => {
-                            //console.log(cur.key);
                             const denominator = denominators ? denominators[cur.key].numerator : null;
-                            //console.log(denominator);
                             acc[cur.key] = {
                                 numerator: cur.values,
                                 denominator: denominator,
@@ -63,25 +60,19 @@ export default function summarizeData(by = null) {
             const summarize = (data, row = null, col = null, denominators = null) => {
 
                 // summarize by col variable
-                console.log(`col: ${col}`);
                 const colNest = nest(data, col);
-                //console.log(data);
-                const colNestTransposed = transpose(colNest, denominators);
+                const colNestTransposed = transpose(colNest, denominators ? denominators.summary.row : null);
 
                 // summarize by row variable
-                console.log(`row: ${row}`);
                 const rowNest = row ? nest(data, row, d => d) : null;
-                if (row) console.log(colNestTransposed);
                 const rowNestTransposed = row
                     ? rowNest
                         .map(row => {
-                            //console.log(row);
                             const nested = nest(row.values, col);
                             nested.key = row.key;
                             return nested;
                         })
                         .map(row => {
-                            console.log(row);
                             const transposed = transpose(row, colNestTransposed);
                             transposed.key = row.key;
                             return transposed;
@@ -95,41 +86,44 @@ export default function summarizeData(by = null) {
             };
 
             module.results.forEach(result => {
-                console.log('----------------------------------------------------------------------------------------------------');
-                console.log(result.label);
                 result.data = module.data.slice();
                 result.subset.forEach(sub => {
                     result.data = result.data
                         .filter(d => sub.values.includes(d[sub.key]));
                 });
-                result.denominators = result.denominator
-                    ? module.results
-                        .find(result1 => result1.label === result.denominator)
-                        .summary
-                        .row
-                    : null;
                 result.summary = summarize(
-                    result.data,
-                    result.by,
-                    by,
-                    result.denominators
+                    result.data, // data
+                    result.by, // row
+                    by, // col
+                    result.denominator // denominators
                 );
-                //console.log(result.summary);
             });
-            //module.by = {
-            //    key: by,
-            //    values: module.variables.includes(by)
-            //        ? d3.set(data.data.map(d => d[by]))
-            //            .values()
-            //            .sort()
-            //            .map(value => {
-            //                return {
-            //                    value,
-            //                };
-            //            }).concat({ value: 'Total'})
-            //        : [{ value: 'Total' }],
-            //};
-            //calculateResults.call(module);
+            data.summary = module.results
+                .map(result => {
+                    const summary = [];
+                    if (result.summary.row)
+                        summary.push({
+                            label: result.label,
+                            value: result.summary.row._overall_.value,
+                            level: 1,
+                        });
+                    if (result.summary.rows)
+                        result.summary.rows.forEach(row => {
+                            summary.push({
+                                label: row.key,
+                                value: row._overall_.value,
+                                level: 2,
+                            });
+                        });
+                    return summary;
+                })
+                .reduce(
+                    (acc,cur) => {
+                        cur.filter(d => d.label !== '_overall_').forEach(d => acc.push(d));
+                        return acc;
+                    },
+                    []
+                );
         } else {
             console.warn(`Data specification [ ${data.spec} ] is invalid.`);
         }

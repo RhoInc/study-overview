@@ -6,6 +6,9 @@ export default function layout() {
             .classed('study-overview', true)
             .attr('id', `study-overview${document.querySelectorAll('.study-overview').length}`),
     };
+    this.containers.controls = this.containers.main
+        .append('div')
+        .classed('so-controls', true);
     this.containers.cards = this.containers.main
         .selectAll('div.so-card')
             .data(this.settings.modules)

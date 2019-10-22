@@ -11,7 +11,7 @@ export default function createTable(by = null) {
                 .classed('so-card__table__header', true)
                 .append('tr')
                 .selectAll('th')
-                    .data([...[''], ...module.byValues, ...['Overall']])
+                    .data([...[''], ...(module.byValues || []), ...['Overall']])
                     .enter()
                 .append('th')
                 .classed('so-card__table__header__cell', true)
@@ -30,7 +30,7 @@ export default function createTable(by = null) {
                 //console.log(d);
                 const row = d3.select(this);
                 row.selectAll('td')
-                        .data(d3.merge([[{value: d.label}], [...module.byValues, ...['_overall_']].map(cell => d.summary.row[cell] || {numerator: null, value: null})]))
+                        .data(d3.merge([[{value: d.label}], [...(module.byValues || []), ...['_overall_']].map(cell => d.summary.row[cell] || {numerator: null, value: null})]))
                         .enter()
                     .append('td')
                     .attr('class', (d,i) => (
@@ -53,7 +53,7 @@ export default function createTable(by = null) {
                                 .classed('so-card__table__row so-card__table__row--by-value', true);
                             byRow
                                 .selectAll('td')
-                                    .data(d3.merge([[{value: row.key}], [...module.byValues, ...['_overall_']].map(cell => row[cell] || {numerator: null, value: null})]))
+                                    .data(d3.merge([[{value: row.key}], [...(module.byValues || []), ...['_overall_']].map(cell => row[cell] || {numerator: null, value: null})]))
                                     .enter()
                                 .append('td')
                                 .attr('class', (di,i) => (

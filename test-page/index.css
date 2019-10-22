@@ -29,9 +29,16 @@
     flex-wrap: wrap;
     flex-direction: row;
 }
+.so-controls {
+    width: calc(100% - 36px);
+    margin: 0px 18px;
+}
+.so-control-group__label {
+    margin-right: 8px;
+}
 .so-card {
     /*
-     * display: flex;
+    display: flex;
     flex-basis: calc(50% - 40px);
     justify-content: top;
     flex-direction: column;
@@ -61,6 +68,7 @@
     empty-cells: show;
     margin: 4px 8px;
     padding: 4px 8px;
+    width: calc(100% - 16px);
 }
 .so-card__table__header {
 }
@@ -87,7 +95,7 @@
     padding: .5em 1em;
 }
 .so-card__table__row__cell:first-child {
-    width: 25%;
+    white-space: nowrap;
 }
 .so-card__table__row__cell:not(:first-child) {
     font-family: 'Lucida Console';

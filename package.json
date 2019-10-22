@@ -34,6 +34,7 @@
   "homepage": "https://github.com/RhoInc/study-overview#readme",
   "dependencies": {
     "d3": "^3.5.17",
+    "js-xlsx": "^0.8.22",
     "webcharts": "^1.11.6"
   },
   "devDependencies": {

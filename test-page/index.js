@@ -24,17 +24,6 @@ Promise
         const instance = studyOverview(
             '#container',
             {
-                //modules: [
-                //    {
-                //        spec: 'queries',
-                //    },
-                //    {
-                //        spec: 'participants',
-                //    },
-                //    {
-                //        spec: 'forms',
-                //    },
-                //],
             }
         );
         instance.init(data);
