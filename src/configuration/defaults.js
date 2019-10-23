@@ -4,6 +4,21 @@ export default function defaults() {
         id_col: ['subjid', 'subjectnameoridentifier'],
         visit_col: ['visit_name', 'folderinstancename'],
         form_col: ['ecrfpagename'],
+        form_order_col: ['form_number', 'form_ordinal'],
+        groups: [
+            {
+                value_col: '_site_',
+                label: 'Site',
+            },
+            {
+                value_col: 'SEX',
+                label: 'Sex',
+            },
+            {
+                value_col: 'RACE',
+                label: 'Race',
+            },
+        ],
         modules: [
             {
                 spec: 'participants',
