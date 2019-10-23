@@ -171,8 +171,9 @@
     function defaults() {
       return {
         site_col: ['site', 'site_name', 'sitename'],
-        id_col: ['subjid', 'subjectnameoridentifier'],
-        visit_col: ['visit_name', 'folderinstancename'],
+        id_col: ['usubjid', 'subjid', 'subjectnameoridentifier'],
+        visit_col: ['visit', 'avisit', 'visit_name', 'folderinstancename'],
+        visit_order_col: ['visitnum', 'avisitn', 'visit_number', 'folder_ordinal'],
         form_col: ['ecrfpagename'],
         form_order_col: ['form_number', 'form_ordinal'],
         groups: [{
@@ -643,6 +644,9 @@
               return d[by];
             })).values().sort();
             data.byValues = module.byValues.slice();
+          } else {
+            delete module.byValues;
+            delete data.byValues;
           } // nest by key variable
 
 
@@ -843,7 +847,9 @@
       this.containers.groupBy.options = this.containers.groupBy.select.selectAll('option').data([{
         value_col: null,
         label: 'None'
-      }].concat(_toConsumableArray(this.settings.groups))).enter().append('option').classed('so-control-group__dropdown__option', true).text(function (d) {
+      }].concat(_toConsumableArray(this.settings.groups))).enter().append('option').classed('so-control-group__dropdown__option', true).property('selected', function (d) {
+        return d.label === 'Site';
+      }).text(function (d) {
         return d.label;
       });
       this.containers.groupBy.select.on('change', function () {
@@ -926,16 +932,19 @@
       var wb = new workBook();
       var wbOptions = {
         bookType: 'xlsx',
-        bookSST: true,
+        bookSST: false,
         type: 'binary'
       };
       this.data.forEach(function (data) {
         var columns = data.byValues ? ['label'].concat(_toConsumableArray(data.byValues), ['value']) : ['label', 'value'];
         var headers = data.byValues ? [''].concat(_toConsumableArray(data.byValues), ['Overall']) : null;
-        console.log(data);
         var name = data.spec;
         var ws = {};
-        var cols = [];
+        var cols = columns.map(function (column, i) {
+          return {
+            wpx: i === 0 ? 250 : 100
+          };
+        });
         var range = {
           s: {
             c: 10000000,
@@ -945,8 +954,7 @@
             c: 0,
             r: 0
           }
-        };
-        var filterRange = 'A1:' + String.fromCharCode(64 + columns.length) + (data.summary.length + !!data.byValues); // Header row
+        }; // Header row
 
         if (data.byValues) headers.forEach(function (header, col) {
           addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
@@ -955,15 +963,13 @@
         data.summary.forEach(function (d, row) {
           columns.forEach(function (variable, col) {
             var cellStyle = clone(bodyStyle);
-            addCell(wb, ws, col === 0 ? "".concat('-'.repeat(d.level - 1), " ").concat(d[variable]) : d[variable], 'c', cellStyle, range, row + !!data.byValues, col); // Define column widths.
-
-            cols.push({
-              wpx: col === 0 ? 250 : 100
-            });
+            addCell(wb, ws, col === 0 ? "".concat('-'.repeat(d.level - 1), " ").concat(d[variable]) : d[variable] || '', 'c', cellStyle, range, row + !!data.byValues, col);
           });
         });
         ws['!ref'] = XLSX.utils.encode_range(range);
-        ws['!cols'] = cols; //ws['!autofilter'] = {
+        ws['!cols'] = cols; //const filterRange =
+        //    'A1:' + String.fromCharCode(64 + columns.length) + (data.summary.length + (!!data.byValues));
+        //ws['!autofilter'] = {
         //    ref: filterRange
         //};
         //ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
@@ -1224,11 +1230,10 @@
       this.data = data;
       standardizeData.call(this);
       mergeData.call(this);
-      createControls.call(this); //summarizeData.call(this, '_site_');
-      //createTable.call(this, '_site_');
-
-      summarizeData.call(this);
-      createTable.call(this);
+      createControls.call(this);
+      summarizeData.call(this, '_site_');
+      createTable.call(this, '_site_'); //summarizeData.call(this);
+      //createTable.call(this);
     }
 
     function destroy() {

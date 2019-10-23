@@ -9,8 +9,8 @@ export default function init(data) {
     standardizeData.call(this);
     mergeData.call(this);
     createControls.call(this);
-    //summarizeData.call(this, '_site_');
-    //createTable.call(this, '_site_');
-    summarizeData.call(this);
-    createTable.call(this);
+    summarizeData.call(this, '_site_');
+    createTable.call(this, '_site_');
+    //summarizeData.call(this);
+    //createTable.call(this);
 }

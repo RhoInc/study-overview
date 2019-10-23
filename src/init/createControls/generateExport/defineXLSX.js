@@ -8,7 +8,7 @@ export default function defineXLSX() {
     const wb = new workBook();
     const wbOptions = {
         bookType: 'xlsx',
-        bookSST: true,
+        bookSST: false,
         type: 'binary'
     };
 
@@ -20,20 +20,29 @@ export default function defineXLSX() {
             ? ['', ...data.byValues, 'Overall']
             : null;
 
-        console.log(data);
-
         const name = data.spec;
         const ws = {};
-        const cols = [];
+        const cols = columns
+            .map((column,i) => {
+                return {
+                    wpx: i === 0 ? 250 : 100
+                };
+            });
         const range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
-
-        const filterRange =
-            'A1:' + String.fromCharCode(64 + columns.length) + (data.summary.length + (!!data.byValues));
 
         // Header row
         if (data.byValues)
             headers.forEach((header, col) => {
-                addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
+                addCell(
+                    wb,
+                    ws,
+                    header,
+                    'c',
+                    clone(headerStyle),
+                    range,
+                    0,
+                    col
+                );
             });
 
         // Data rows
@@ -41,15 +50,26 @@ export default function defineXLSX() {
             columns.forEach((variable, col) => {
                 const cellStyle = clone(bodyStyle);
 
-                addCell(wb, ws, col === 0 ? `${'-'.repeat(d.level - 1)} ${d[variable]}` : d[variable], 'c', cellStyle, range, row + (!!data.byValues), col);
-
-                // Define column widths.
-                cols.push({ wpx: col === 0 ? 250 : 100});
+                addCell(
+                    wb,
+                    ws,
+                    col === 0
+                        ? `${'-'.repeat(d.level - 1)} ${d[variable]}`
+                        : d[variable] || '',
+                    'c',
+                    cellStyle,
+                    range,
+                    row + (!!data.byValues),
+                    col
+                );
             });
         });
 
         ws['!ref'] = XLSX.utils.encode_range(range);
         ws['!cols'] = cols;
+
+        //const filterRange =
+        //    'A1:' + String.fromCharCode(64 + columns.length) + (data.summary.length + (!!data.byValues));
         //ws['!autofilter'] = {
         //    ref: filterRange
         //};

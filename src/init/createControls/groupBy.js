@@ -22,6 +22,7 @@ export default function groupBy() {
             .enter()
         .append('option')
         .classed('so-control-group__dropdown__option', true)
+        .property('selected', d => d.label === 'Site')
         .text(d => d.label);
     this.containers.groupBy.select.on('change', function() {
         const option = d3.select(this).selectAll('option:checked');

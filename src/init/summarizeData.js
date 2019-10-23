@@ -17,6 +17,9 @@ export default function summarizeData(by = null) {
                     .values()
                     .sort();
                 data.byValues = module.byValues.slice();
+            } else {
+                delete module.byValues;
+                delete data.byValues;
             }
 
             // nest by key variable
