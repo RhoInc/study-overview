@@ -643,6 +643,7 @@
             module.byValues = d3.set(data.data.map(function (d) {
               return d[by];
             })).values().sort();
+            data.byValues = module.byValues.slice();
           } // nest by key variable
 
 
@@ -718,18 +719,33 @@
           });
           data.summary = module.results.map(function (result) {
             var summary = [];
-            if (result.summary.row) summary.push({
-              label: result.label,
-              value: result.summary.row._overall_.value,
-              level: 1
-            });
-            if (result.summary.rows) result.summary.rows.forEach(function (row) {
-              summary.push({
-                label: row.key,
-                value: row._overall_.value,
-                level: 2
+
+            if (result.summary.row) {
+              var obj = {
+                label: result.label,
+                value: result.summary.row._overall_.value,
+                level: 1
+              };
+              if (by) module.byValues.forEach(function (byValue) {
+                obj[byValue] = result.summary.row[byValue] ? result.summary.row[byValue].value : null;
               });
-            });
+              summary.push(obj);
+            }
+
+            if (result.summary.rows) {
+              result.summary.rows.forEach(function (row) {
+                var obj = {
+                  label: row.key,
+                  value: row._overall_.value,
+                  level: 2
+                };
+                if (by) module.byValues.forEach(function (byValue) {
+                  obj[byValue] = row[byValue] ? row[byValue].value : null;
+                });
+                summary.push(obj);
+              });
+            }
+
             return summary;
           }).reduce(function (acc, cur) {
             cur.filter(function (d) {
@@ -821,7 +837,7 @@
     function groupBy() {
       var studyOverview = this;
       this.containers.groupBy = {
-        main: this.containers.controls.append('div').classed('so-control-group', true)
+        main: this.containers.controls.append('div').classed('so-control-group so-control-group--group-by', true)
       };
       this.containers.groupBy.label = this.containers.groupBy.main.append('span').classed('so-control-group__label', true).text('Group by');
       this.containers.groupBy.select = this.containers.groupBy.main.append('select').classed('so-control-group__dropdown', true);
@@ -871,14 +887,12 @@
       alignment: {
         wrapText: true
       },
-      border: {
-        bottom: {
-          style: 'thick',
-          color: {
-            rgb: null // set in defineXLSX
-
-          }
-        }
+      border: {//bottom: {
+        //    style: 'thick',
+        //    color: {
+        //        rgb: null // set in defineXLSX
+        //    }
+        //}
       }
     };
 
@@ -910,69 +924,53 @@
     }
 
     function defineXLSX() {
-      var _this = this;
-
-      var name = 'Study Overview';
       var wb = new workBook();
-      var ws = {};
-      var cols = [];
-      var range = {
-        s: {
-          c: 10000000,
-          r: 10000000
-        },
-        e: {
-          c: 0,
-          r: 0
-        }
-      };
       var wbOptions = {
         bookType: 'xlsx',
         bookSST: true,
         type: 'binary'
       };
-      var filterRange = 'A1:' + String.fromCharCode(64 + this.config.cols.length) + (this.data.filtered.length + 1); // Header row
-
-      this.config.headers.forEach(function (header, col) {
-        addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
-      }); // Data rows
-
-      this.data.filtered.forEach(function (d, row) {
-        _this.config.cols.forEach(function (variable, col) {
-          var visit = variable.replace(/-date$/, '');
-          var cellStyle = clone(bodyStyle);
-          var color = d["".concat(visit, "-color")];
-          var fontColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FF000000';
-          var borderColor = /^#[a-z0-9]{6}$/i.test(color) ? color.replace('#', 'FF') : 'FFCCCCCC';
-
-          if (col > 2) {
-            cellStyle.font.color.rgb = fontColor;
-            cellStyle.border.bottom.color.rgb = borderColor;
-          } else {
-            delete cellStyle.font.color.rgb;
-            delete cellStyle.border.bottom;
+      this.data.forEach(function (data) {
+        var columns = data.byValues ? ['label'].concat(_toConsumableArray(data.byValues), ['value']) : ['label', 'value'];
+        var headers = data.byValues ? [''].concat(_toConsumableArray(data.byValues), ['Overall']) : null;
+        var name = data.spec;
+        var ws = {};
+        var cols = [];
+        var range = {
+          s: {
+            c: 10000000,
+            r: 10000000
+          },
+          e: {
+            c: 0,
+            r: 0
           }
+        };
+        var filterRange = 'A1:' + String.fromCharCode(64 + columns.length) + (data.summary.length + !!data.byValues); // Header row
 
-          addCell(wb, ws, d[variable] || '', 'c', cellStyle, range, row + 1, col);
+        if (data.byValues) headers.forEach(function (header, col) {
+          addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
+        }); // Data rows
+
+        data.summary.forEach(function (d, row) {
+          columns.forEach(function (variable, col) {
+            var cellStyle = clone(bodyStyle);
+            addCell(wb, ws, col === 0 ? "".concat('-'.repeat(d.level - 1), " ").concat(d[variable]) : d[variable], 'c', cellStyle, range, row + !!data.byValues, col); // Define column widths.
+
+            cols.push({
+              wpx: col === 0 ? 250 : 100
+            });
+          });
         });
-      }); // Define column widths.
+        ws['!ref'] = XLSX.utils.encode_range(range);
+        ws['!cols'] = cols; //ws['!autofilter'] = {
+        //    ref: filterRange
+        //};
+        //ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
 
-      var tr = this.tbody.selectAll('tr').filter(function (d, i) {
-        return i === 0;
+        wb.SheetNames.push(name);
+        wb.Sheets[name] = ws;
       });
-      tr.selectAll('td').each(function (d, i) {
-        cols.push({
-          wpx: i > 0 ? this.offsetWidth - 20 : 175
-        });
-      });
-      ws['!ref'] = XLSX.utils.encode_range(range);
-      ws['!cols'] = cols;
-      ws['!autofilter'] = {
-        ref: filterRange
-      }; // ws['!freeze'] = { xSplit: '1', ySplit: '1', topLeftCell: 'B2', activePane: 'bottomRight', state: 'frozen' };
-
-      wb.SheetNames.push(name);
-      wb.Sheets[name] = ws;
       this.XLSX = XLSX.write(wb, wbOptions);
     }
 
@@ -1204,7 +1202,7 @@
       var _this = this;
 
       this.containers["export"] = {
-        main: this.containers.controls.append('div').classed('so-control-group', true)
+        main: this.containers.controls.append('div').classed('so-control-group so-control-group--export', true)
       };
       this.containers["export"].xlsx = this.containers["export"].main.append('span').classed('so-control-group__label', true).text('Export'); //this.containers.export.xlsx = this.containers.export.main
       //    .append('span')
@@ -1215,7 +1213,6 @@
         defineXLSX.call(_this);
         exportXLSX.call(_this);
       });
-      console.log(this.data);
     }
 
     function createControls() {

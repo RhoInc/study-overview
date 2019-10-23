@@ -33,6 +33,27 @@
     width: calc(100% - 36px);
     margin: 0px 18px;
 }
+.so-control-group {
+    display: inline-block;
+}
+.so-control-group--export {
+    float: right;
+    padding: 4px;
+    border: 2px solid black;
+    background: #aaa;
+    color: black;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.so-control-group--export:hover {
+    border: 2px solid #aaa;
+    background: black;
+    color: #aaa;
+}
+.so-control-group--export .so-control-group__label {
+    margin-right: 0px;
+}
 .so-control-group__label {
     margin-right: 8px;
 }

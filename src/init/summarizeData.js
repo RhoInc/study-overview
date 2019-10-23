@@ -16,6 +16,7 @@ export default function summarizeData(by = null) {
                 module.byValues = d3.set(data.data.map(d => d[by]))
                     .values()
                     .sort();
+                data.byValues = module.byValues.slice();
             }
 
             // nest by key variable
@@ -101,20 +102,39 @@ export default function summarizeData(by = null) {
             data.summary = module.results
                 .map(result => {
                     const summary = [];
-                    if (result.summary.row)
-                        summary.push({
+
+                    if (result.summary.row) {
+                        const obj = {
                             label: result.label,
                             value: result.summary.row._overall_.value,
                             level: 1,
-                        });
-                    if (result.summary.rows)
+                        };
+
+                        if (by)
+                            module.byValues.forEach(byValue => {
+                                obj[byValue] = result.summary.row[byValue] ? result.summary.row[byValue].value : null;
+                            });
+
+                        summary.push(obj);
+                    }
+
+                    if (result.summary.rows) {
                         result.summary.rows.forEach(row => {
-                            summary.push({
+                            const obj = {
                                 label: row.key,
                                 value: row._overall_.value,
                                 level: 2,
-                            });
+                            };
+
+                            if (by)
+                                module.byValues.forEach(byValue => {
+                                    obj[byValue] = row[byValue] ? row[byValue].value : null;
+                                });
+
+                            summary.push(obj);
                         });
+                    }
+
                     return summary;
                 })
                 .reduce(

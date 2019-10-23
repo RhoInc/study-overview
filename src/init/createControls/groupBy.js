@@ -7,7 +7,7 @@ export default function groupBy() {
     this.containers.groupBy = {
         main: this.containers.controls
             .append('div')
-            .classed('so-control-group', true),
+            .classed('so-control-group so-control-group--group-by', true),
     };
     this.containers.groupBy.label = this.containers.groupBy.main
         .append('span')

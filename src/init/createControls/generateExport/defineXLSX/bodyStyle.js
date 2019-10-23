@@ -14,11 +14,11 @@ export default {
         wrapText: true
     },
     border: {
-        bottom: {
-            style: 'thick',
-            color: {
-                rgb: null // set in defineXLSX
-            }
-        }
+        //bottom: {
+        //    style: 'thick',
+        //    color: {
+        //        rgb: null // set in defineXLSX
+        //    }
+        //}
     }
 };

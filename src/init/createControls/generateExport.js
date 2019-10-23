@@ -5,7 +5,7 @@ export default function generateExport() {
     this.containers.export = {
         main: this.containers.controls
             .append('div')
-            .classed('so-control-group', true),
+            .classed('so-control-group so-control-group--export', true),
     };
     this.containers.export.xlsx = this.containers.export.main
         .append('span')
@@ -19,5 +19,4 @@ export default function generateExport() {
         defineXLSX.call(this);
         exportXLSX.call(this);
     });
-    console.log(this.data);
 }
