@@ -24,6 +24,7 @@
     display: inline-block;
 }
 
+/*
 .study-overview {
     display: flex;
     flex-wrap: wrap;
@@ -58,12 +59,10 @@
     margin-right: 8px;
 }
 .so-card {
-    /*
     display: flex;
     flex-basis: calc(50% - 40px);
     justify-content: top;
     flex-direction: column;
-    */
     display: inline-block;
     width: calc(50% - 40px);
     margin: 18px;
@@ -125,3 +124,4 @@
 .so-card__table__row--by-value .so-card__table__row__cell:first-child {
     padding-left: 3em;
 }
+*/

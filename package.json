@@ -1,6 +1,6 @@
 {
   "name": "study-overview",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "a high-level summary of study accrual and data cleaning metrics",
   "module": "src/index.js",
   "main": "studyOverview.js",
