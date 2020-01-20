@@ -11,7 +11,7 @@ export default function studyOverview(element = 'body', settings = {}) {
         element,
         settings,
         init,
-        destroy,
+        destroy
     };
 
     configuration.call(studyOverview);

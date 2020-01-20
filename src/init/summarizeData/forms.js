@@ -5,7 +5,14 @@ export default function forms(module) {
     // overall
     const nForms = {
         key: '# Pages Started',
-        data: d3.set(data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
+        data: d3
+            .set(
+                data.map(
+                    d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`
+                )
+            )
+            .values()
+            .sort() // TODO: use settings or data spec here
     };
     nForms.values = nForms.data.length;
     summary.push(nForms);

@@ -13,36 +13,22 @@ export default function defineXLSX() {
     };
 
     this.data.forEach(data => {
-        const columns = data.byValues
-            ? ['label', ...data.byValues, 'value']
-            : ['label', 'value'];
-        const headers = data.byValues
-            ? ['', ...data.byValues, 'Overall']
-            : null;
+        const columns = data.byValues ? ['label', ...data.byValues, 'value'] : ['label', 'value'];
+        const headers = data.byValues ? ['', ...data.byValues, 'Overall'] : null;
 
         const name = data.spec;
         const ws = {};
-        const cols = columns
-            .map((column,i) => {
-                return {
-                    wpx: i === 0 ? 250 : 100
-                };
-            });
+        const cols = columns.map((column, i) => {
+            return {
+                wpx: i === 0 ? 250 : 100
+            };
+        });
         const range = { s: { c: 10000000, r: 10000000 }, e: { c: 0, r: 0 } };
 
         // Header row
         if (data.byValues)
             headers.forEach((header, col) => {
-                addCell(
-                    wb,
-                    ws,
-                    header,
-                    'c',
-                    clone(headerStyle),
-                    range,
-                    0,
-                    col
-                );
+                addCell(wb, ws, header, 'c', clone(headerStyle), range, 0, col);
             });
 
         // Data rows
@@ -53,13 +39,11 @@ export default function defineXLSX() {
                 addCell(
                     wb,
                     ws,
-                    col === 0
-                        ? `${'-'.repeat(d.level - 1)} ${d[variable]}`
-                        : d[variable] || '',
+                    col === 0 ? `${'-'.repeat(d.level - 1)} ${d[variable]}` : d[variable] || '',
                     'c',
                     cellStyle,
                     range,
-                    row + (!!data.byValues),
+                    row + !!data.byValues,
                     col
                 );
             });

@@ -2,19 +2,19 @@ export default function tables() {
     return [
         {
             spec: 'accrual',
-            label: 'Accrual',
+            label: 'Accrual'
         },
         {
             spec: 'visits',
-            label: 'Visits',
+            label: 'Visits'
         },
         {
             spec: 'forms',
-            label: 'Forms',
+            label: 'Forms'
         },
         {
             spec: 'queries',
-            label: 'Queries',
-        },
+            label: 'Queries'
+        }
     ];
 }

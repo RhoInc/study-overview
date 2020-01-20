@@ -5,7 +5,14 @@ export default function queries(module) {
     // overall
     const nQueries = {
         key: '# Queries Generated',
-        data: d3.set(data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
+        data: d3
+            .set(
+                data.map(
+                    d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`
+                )
+            )
+            .values()
+            .sort() // TODO: use settings or data spec here
     };
     nQueries.values = nQueries.data.length;
     summary.push(nQueries);

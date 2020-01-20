@@ -6,7 +6,8 @@ import stratifyRowWise from './stratifyRowWise';
 export default function stratifyColWise(result, by, module) {
     if (by) {
         result.by = {
-            values: d3.set(result.data.map(d => d[by]))
+            values: d3
+                .set(result.data.map(d => d[by]))
                 .values()
                 .sort()
                 .map(value => {
@@ -14,10 +15,10 @@ export default function stratifyColWise(result, by, module) {
                         denominator: result.denominator,
                         header: value,
                         label: result.label,
-                        subset: [{key: by, values: [value]}, ...result.subset],
-                        summary: result.summary,
+                        subset: [{ key: by, values: [value] }, ...result.subset],
+                        summary: result.summary
                     };
-                }),
+                })
         };
         result.by.values.forEach(byValue => {
             filterData(byValue, module);

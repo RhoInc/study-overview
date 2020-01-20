@@ -7,7 +7,7 @@ export default function groupBy() {
     this.containers.groupBy = {
         main: this.containers.controls
             .append('div')
-            .classed('so-control-group so-control-group--group-by', true),
+            .classed('so-control-group so-control-group--group-by', true)
     };
     this.containers.groupBy.label = this.containers.groupBy.main
         .append('span')
@@ -18,8 +18,8 @@ export default function groupBy() {
         .classed('so-control-group__dropdown', true);
     this.containers.groupBy.options = this.containers.groupBy.select
         .selectAll('option')
-            .data([{value_col: null, label: 'None'}, ...this.settings.groups])
-            .enter()
+        .data([{ value_col: null, label: 'None' }, ...this.settings.groups])
+        .enter()
         .append('option')
         .classed('so-control-group__dropdown__option', true)
         .property('selected', d => d.label === 'Site')

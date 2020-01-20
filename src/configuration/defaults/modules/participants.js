@@ -9,62 +9,75 @@ export default function participants() {
                 subset: [
                     {
                         key: 'SBJTSTAT',
-                        values: ['Ongoing'],
+                        values: ['Ongoing']
                     },
                     {
                         key: 'RFENDY',
-                        values: ['6', '15', '16', '20', '21', '22', '28', '29', '30', '32', '42', '43', '44', '47'],
-                    },
+                        values: [
+                            '6',
+                            '15',
+                            '16',
+                            '20',
+                            '21',
+                            '22',
+                            '28',
+                            '29',
+                            '30',
+                            '32',
+                            '42',
+                            '43',
+                            '44',
+                            '47'
+                        ]
+                    }
                 ],
                 summary: 'count',
-                denominator: '# Participants',
+                denominator: '# Participants'
             },
             {
                 label: 'Screen Failed',
                 subset: [
                     {
                         key: 'SBJTSTAT',
-                        values: ['Screen Failure'],
-                    },
+                        values: ['Screen Failure']
+                    }
                 ],
                 summary: 'count',
-                denominator: '# Participants',
+                denominator: '# Participants'
             },
             {
                 label: 'Enrolled',
                 subset: [
                     {
                         key: 'SBJTSTAT',
-                        values: [
-                            'Ongoing'
-                        ],
-                    },
+                        values: ['Ongoing']
+                    }
                 ],
                 summary: 'count',
-                denominator: '# Participants',
+                denominator: '# Participants'
             },
             {
                 label: 'Completed',
                 subset: [
                     {
                         key: 'SBJTSTAT',
-                        values: ['Completed'],
-                    },
+                        values: ['Completed']
+                    }
                 ],
                 summary: 'count',
-                denominator: '# Participants',
+                denominator: '# Participants'
             },
             {
                 label: 'Early Termination',
                 subset: [
                     {
                         key: 'SBJTSTAT',
-                        values: ['Early Termination'],
-                    },
+                        values: ['Early Termination']
+                    }
                 ],
                 summary: 'count',
-                denominator: '# Participants',
-            },
-        ],
+                denominator: '# Participants'
+            }
+        ]
     };
 }

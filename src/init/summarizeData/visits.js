@@ -5,7 +5,14 @@ export default function visits(module) {
     // overall
     const nVisits = {
         key: '# Visits',
-        data: d3.set(data.map(d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`)).values().sort(), // TODO: use settings or data spec here
+        data: d3
+            .set(
+                data.map(
+                    d => `${d.subjectnameoridentifier}||${d.folderinstancename}||${d.ecrfpagename}`
+                )
+            )
+            .values()
+            .sort() // TODO: use settings or data spec here
     };
     nVisits.values = nVisits.data.length;
     summary.push(nVisits);

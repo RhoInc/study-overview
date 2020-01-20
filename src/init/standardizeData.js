@@ -6,7 +6,7 @@ export default function standardizeData() {
         .map(key => {
             return {
                 setting: key,
-                variable: `_${key.replace(/_col$/, '')}_`.replace(/^_id_$/, '_participant_'),
+                variable: `_${key.replace(/_col$/, '')}_`.replace(/^_id_$/, '_participant_')
             };
         });
 
@@ -16,12 +16,16 @@ export default function standardizeData() {
 
         // Standardize variables.
         dataMappings.forEach(dataMapping => {
-            data[dataMapping.setting] = standardizeVariable.call(this, dataMapping.setting, variables);
+            data[dataMapping.setting] = standardizeVariable.call(
+                this,
+                dataMapping.setting,
+                variables
+            );
         });
 
         // Attach variable with standard name to data array.
-        data.data.forEach((d,i) => {
-            dataMappings.forEach((dataMapping,j) => {
+        data.data.forEach((d, i) => {
+            dataMappings.forEach((dataMapping, j) => {
                 d[dataMapping.variable] = d[data[dataMapping.setting]];
             });
         });

@@ -7,7 +7,10 @@ export default function accrual(module, by = null) {
     // overall
     const nSubjects = {
         key: '# Subjects Total',
-        data: d3.set(data.map(d => d.subjid)).values().sort(), // TODO: use settings or data spec here
+        data: d3
+            .set(data.map(d => d.subjid))
+            .values()
+            .sort() // TODO: use settings or data spec here
     };
     nSubjects.values = nSubjects.data.length;
     summary.push(nSubjects);
@@ -16,11 +19,15 @@ export default function accrual(module, by = null) {
     console.log(total);
 
     // by population
-    const populations = d3.nest()
+    const populations = d3
+        .nest()
         .key(d => d.population)
         .rollup(d => {
             const nSubjects = {
-                data: d3.set(d.map(di => di.subjid)).values().sort(),
+                data: d3
+                    .set(d.map(di => di.subjid))
+                    .values()
+                    .sort()
             };
             nSubjects.values = nSubjects.data.length;
 
