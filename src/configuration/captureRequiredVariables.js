@@ -1,4 +1,4 @@
-export default function dataSpecifications() {
+export default function captureRequiredVariables() {
     this.settings.modules.forEach(module => {
         module.variables = Array.from(
             new Set(
