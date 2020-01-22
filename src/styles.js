@@ -25,12 +25,6 @@ export default function styles() {
         '.so-control-group--export .so-control-group__label {' + '    margin-right: 0px;' + '}',
         '.so-control-group__label {' + '    margin-right: 8px;' + '}',
         '.so-card {' +
-            '    /*' +
-            '    display: flex;' +
-            '    flex-basis: calc(50% - 40px);' +
-            '    justify-content: top;' +
-            '    flex-direction: column;' +
-            '    */' +
             '    display: inline-block;' +
             '    width: calc(50% - 40px);' +
             '    margin: 18px;' +

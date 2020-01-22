@@ -4,5 +4,5 @@ import captureRequiredVariables from './configuration/captureRequiredVariables';
 
 export default function configuration() {
     sync.call(this, defaults());
-    captureRequiredVariables.call(this)
+    captureRequiredVariables.call(this);
 }

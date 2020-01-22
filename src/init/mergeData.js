@@ -1,9 +1,11 @@
 export default function mergeData() {
     const participants = this.data.find(dataset => dataset.spec === 'participants');
+
     if (participants !== undefined) {
         const datasets = this.data
             .filter(dataset => dataset.spec !== 'participants')
             .map(dataset => dataset.data);
+
         participants.data.forEach(participant => {
             datasets.forEach(dataset => {
                 dataset

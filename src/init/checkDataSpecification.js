@@ -6,8 +6,12 @@ export default function checkDataSpecification(data) {
 
     datasets.forEach(dataset => {
         dataset.variables = Object.keys(dataset.data[0]);
-        if (dataset.hasOwnProperty('spec'))
+
+        // Attach specified module to dataset.
+        if (dataset.hasOwnProperty('spec')) {
             dataset.module = this.settings.modules.find(module => module.spec === dataset.spec);
+        }
+        // Detect module by comparing variables in dataset with variables in module specification.
         else {
             const matches = this.settings.modules.map(module => {
                 const match = JSON.parse(JSON.stringify(module));
@@ -19,17 +23,19 @@ export default function checkDataSpecification(data) {
                 match.proportion = match.matching / match.total;
                 return match;
             });
-            dataset.module = matches.find(
-                match => match.proportion === d3.max(matches, match => match.proportion)
+
+            // Attach module with the most matching variables to dataset.
+            dataset.module = this.settings.modules.find(
+                module =>
+                    module.spec ===
+                    matches.find(
+                        match => match.proportion === d3.max(matches, match => match.proportion)
+                    ).spec
             );
+
             dataset.spec = dataset.module ? dataset.module.spec : null;
         }
     });
-
-    this.settings.datasets = datasets.map(dataset => dataset.spec);
-    this.settings.modules = this.settings.modules.filter(module =>
-        this.settings.datasets.includes(module.spec)
-    );
 
     return datasets;
 }
