@@ -1,8 +1,8 @@
 const files = [
-    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adsl.csv',
-    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/visits.csv',
-    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
-    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/queries.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adsl.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/visits.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/queries.csv',
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/miscellaneous/iris.csv',
 ].map(file => {
     return {
