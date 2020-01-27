@@ -5,6 +5,7 @@ export default function styles() {
             '    flex-wrap: wrap;' +
             '    flex-direction: row;' +
             '}',
+        '.so-hidden {' + '    display: none !important;' + '}',
         '.so-controls {' + '    width: calc(100% - 36px);' + '    margin: 0px 18px;' + '}',
         '.so-control-group {' + '    display: inline-block;' + '}',
         '.so-control-group--export {' +
@@ -25,21 +26,18 @@ export default function styles() {
         '.so-control-group--export .so-control-group__label {' + '    margin-right: 0px;' + '}',
         '.so-control-group__label {' + '    margin-right: 8px;' + '}',
         '.so-card {' +
-            '    /*' +
-            '    display: flex;' +
-            '    flex-basis: calc(50% - 40px);' +
-            '    justify-content: top;' +
-            '    flex-direction: column;' +
-            '    */' +
             '    display: inline-block;' +
             '    width: calc(50% - 40px);' +
             '    margin: 18px;' +
             '    border: 1px solid #aaa;' +
             '    border-radius: 4px;' +
             '    overflow-x: auto;' +
+            '    position: relative;' +
             '}',
-        '.so-card > * {' +
-            '    width: 100%;' +
+        '.so-card--unidentified {' + '    width: calc(100% - 40px);' + '}',
+        '.so-card .so-card__header,' +
+            '.so-card .so-card__table {' +
+            '    width: calc(100% - 36px);' +
             '    vertical-align: top;' +
             '    display: table;' +
             '}',
@@ -50,6 +48,26 @@ export default function styles() {
             '    font-weight: lighter;' +
             '    border-bottom: 1px solid #aaa;' +
             '}',
+        '.so-card__icon {' +
+            '    position: absolute;' +
+            '    top: 8px;' +
+            '    fill: #aaa;' +
+            '    cursor: pointer;' +
+            '}',
+        '.so-card__icon--active {' + '    fill: #555;' + '}',
+        '.so-card__icon--info {' +
+            '    right: 16px;' +
+            '    cursor: help;' +
+            '    display: none;' +
+            '}',
+        '.so-card__icon--codebook {' +
+            //'    right: 48px;' +
+            '    right: 16px;' +
+            '}',
+        '.so-card__icon--table {' +
+            //'    right: 78px;' +
+            '    right: 48px;' +
+            '}',
         '.so-card__table {' +
             '    border-collapse: collapse;' +
             '    border-spacing: 0;' +
@@ -58,6 +76,10 @@ export default function styles() {
             '    padding: 4px 8px;' +
             '    width: calc(100% - 16px);' +
             '}',
+        '.so-card__codebook {' + '    margin: 4px 8px;' + '    padding: 4px 8px;' + '}',
+        //'.so-card__codebook > .web-codebook {' +
+        //    '    margin: 0 auto;' +
+        //    '}',
         '.so-card__table__header {' + '}',
         '.so-card__table__header__cell {' + '    padding: .5em 1em;' + '}',
         '.so-card__table__row {' + '}',

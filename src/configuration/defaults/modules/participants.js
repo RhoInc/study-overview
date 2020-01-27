@@ -5,6 +5,11 @@ export default function participants() {
         unit: 'participant',
         results: [
             {
+                label: '# Participants',
+                subset: [],
+                summary: 'count'
+            },
+            {
                 label: 'Screening',
                 subset: [
                     {

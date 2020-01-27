@@ -1,6 +1,5 @@
 import clone from '../util/clone';
 import merge from '../util/merge';
-import dataSpecifications from './dataSpecifications';
 
 export default function sync(defaults) {
     const settings = clone(this.settings);
@@ -28,6 +27,4 @@ export default function sync(defaults) {
             }
         });
     });
-
-    dataSpecifications.call(this);
 }
