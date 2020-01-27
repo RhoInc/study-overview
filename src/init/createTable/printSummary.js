@@ -1,3 +1,4 @@
+// TODO: attach containers to dataset instead of module
 export default function printSummary(dataset, by) {
     const module = dataset.module;
 
@@ -6,6 +7,12 @@ export default function printSummary(dataset, by) {
         header: this.containers.headers.filter(d => d.spec === module.spec),
         table: this.containers.tables.filter(d => d.spec === module.spec)
     };
+    module.containers.table = module.containers.card.selectAll('.so-card__table');
+    module.containers.codebook = module.containers.card.selectAll('.so-card__codebook');
+    module.containers.info = module.containers.card.selectAll('.so-card__info');
+
+    if (dataset.missingVariables.length > 0)
+        module.containers.info.classed('so-card__info--missing-variables', true);
 
     if (by) {
         module.containers.header = module.containers.table

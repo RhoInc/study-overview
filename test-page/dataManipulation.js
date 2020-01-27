@@ -17,16 +17,17 @@ function dataManipulation(datasets) {
         );
     const queries = datasets
         .find(dataset => dataset.spec === 'queries');
-    queries.data
-        .forEach(d => {
-            const age = +d.odays;
-            ageRanges.forEach((ageRange, i) => {
-                if (i === 0 && ageRange[0] <= age && age <= ageRange[1])
-                    d.queryage = ageRangeCategories[i];
-                else if (i === ageRanges.length - 1 && ageRange[0] < age)
-                    d.queryage = ageRangeCategories[i];
-                else if (ageRange[0] < age && age <= ageRange[1])
-                    d.queryage = ageRangeCategories[i];
+    if (queries)
+        queries.data
+            .forEach(d => {
+                const age = +d.odays;
+                ageRanges.forEach((ageRange, i) => {
+                    if (i === 0 && ageRange[0] <= age && age <= ageRange[1])
+                        d.queryage = ageRangeCategories[i];
+                    else if (i === ageRanges.length - 1 && ageRange[0] < age)
+                        d.queryage = ageRangeCategories[i];
+                    else if (ageRange[0] < age && age <= ageRange[1])
+                        d.queryage = ageRangeCategories[i];
+                });
             });
-        });
 }

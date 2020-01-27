@@ -3,10 +3,11 @@ const files = [
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/visits.csv',
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/forms.csv',
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/data-cleaning/queries.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adae.csv',
 ].map(file => {
     return {
         url: file,
-        spec: file.split('/').pop().split('.')[0].replace('adsl', 'participants').toLowerCase(),
+        spec: file.split('/').pop().split('.')[0].replace('adsl', 'participants').replace('adae', 'adverse-events').toLowerCase(),
         response: fetch(file).then(response => response.text()),
     };
 });

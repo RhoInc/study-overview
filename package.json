@@ -1,6 +1,6 @@
 {
   "name": "study-overview",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "a high-level summary of study accrual and data cleaning metrics",
   "module": "src/index.js",
   "main": "studyOverview.js",
@@ -46,5 +46,8 @@
     "prettier": "^1.19.1",
     "rollup": "^1.29.0",
     "rollup-plugin-babel": "^4.3.3"
+  },
+  "optionalDependencies": {
+    "webcodebook": "^1.6.2"
   }
 }
